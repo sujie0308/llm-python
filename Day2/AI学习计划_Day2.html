@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 2 (6/2) - Python函数与OOP</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; color: #1a1a2e; line-height: 1.65; background: #f0f2f5; }
+.page { max-width: 900px; margin: 0 auto; background: #fff; }
+.header { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: #fff; padding: 28px 36px; }
+.header .day-badge { display: inline-block; background: #e94560; padding: 4px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; margin-bottom: 10px; }
+.header h1 { font-size: 26px; margin-bottom: 4px; }
+.header .subtitle { opacity: 0.75; font-size: 14px; }
+.header .meta { display: flex; gap: 24px; margin-top: 12px; font-size: 13px; opacity: 0.85; flex-wrap: wrap; }
+.content { padding: 28px 36px; }
+.phase { border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 22px; overflow: hidden; }
+.phase-header { padding: 12px 18px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+.phase-day { background: #e3f2fd; color: #0d47a1; }
+.phase-night { background: #ede7f6; color: #4a148c; }
+.phase-body { padding: 16px 18px; }
+.task { border-left: 4px solid #ddd; padding: 12px 16px; margin-bottom: 14px; background: #fafafa; border-radius: 0 8px 8px 0; }
+.task.learn { border-left-color: #2196f3; }
+.task.practice { border-left-color: #4caf50; }
+.task.verify { border-left-color: #ff9800; }
+.task-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.task-title .icon { font-size: 16px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.tag-learn { background: #e3f2fd; color: #1565c0; }
+.tag-practice { background: #e8f5e9; color: #2e7d32; }
+.tag-verify { background: #fff3e0; color: #ef6c00; }
+.tag-time { background: #f3e5f5; color: #7b1fa2; }
+.tag-tool { background: #eceff1; color: #546e7a; }
+.task-detail { font-size: 13px; color: #444; margin-top: 6px; }
+.task-detail p { margin: 3px 0; }
+.task-detail a { color: #1565c0; text-decoration: none; border-bottom: 1px dashed #1565c0; }
+.task-detail a:hover { color: #0d47a1; border-bottom-style: solid; }
+.task-detail code { background: #f5f5f5; padding: 1px 6px; border-radius: 3px; font-family: "Cascadia Code", "Fira Code", monospace; font-size: 12px; color: #c62828; }
+.purpose { background: #e8eaf6; border-radius: 6px; padding: 8px 12px; margin-top: 6px; font-size: 13px; }
+.purpose::before { content: "🎯 目的："; font-weight: 700; }
+.verify-box { background: #fff8e1; border-radius: 6px; padding: 8px 12px; margin-top: 6px; font-size: 13px; }
+.verify-box::before { content: "✅ 验证标准："; font-weight: 700; }
+.tip { background: linear-gradient(135deg, #fffde7, #fff9c4); border-left: 4px solid #fbc02d; padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 14px 0; font-size: 13px; }
+.checklist { margin-top: 14px; }
+.checklist h3 { font-size: 15px; color: #0d47a1; margin-bottom: 8px; }
+.check-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #e0e0e0; font-size: 13px; }
+.check-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4caf50; }
+.notes { margin-top: 18px; }
+.notes textarea { width: 100%; min-height: 80px; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; font-size: 13px; font-family: inherit; resize: vertical; }
+.print-bar { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; gap: 8px; }
+.print-bar a, .print-bar button { padding: 10px 18px; border: none; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.15); text-decoration: none; }
+.btn-print { background: #0d47a1; color: #fff; }
+.btn-print:hover { background: #1565c0; }
+.btn-nav { background: #fff; color: #333; }
+pre { background: #1e1e2e; color: #cdd6f4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; margin-top: 6px; font-family: "Cascadia Code", monospace; }
+@media print {
+    body { background: #fff; }
+    .page { box-shadow: none; }
+    .print-bar { display: none; }
+    .phase, .task { break-inside: avoid; }
+    a { color: #1565c0 !important; text-decoration: underline !important; }
+    a::after { content: " (" attr(href) ")"; font-size: 10px; color: #666; }
+}
+</style>
+</head>
+<body>
+
+<div class="print-bar">
+    <a class="btn-nav" href="AI学习计划_Day1.html">◀ 上一天</a>
+    <a class="btn-nav" href="AI学习计划_总览.html">📋 总览</a>
+    <button class="btn-print" onclick="window.print()">🖨 打印</button>
+    <a class="btn-nav" href="AI学习计划_Day3.html">下一天 ▶</a>
+</div>
+
+<div class="page">
+
+<div class="header">
+    <div class="day-badge">DAY 2 / 180</div>
+    <h1>Python 函数进阶 + 面向对象 + 封装第一个 LLMClient</h1>
+    <div class="subtitle">第 1 周 · Python 速成 · 从 Swift class 到 Python class</div>
+    <div class="meta">
+        <span>📅 2026年6月2日 周二</span>
+        <span>⏱ 白天 3h + 晚上 3h = 6h</span>
+        <span>🖥 RTX 5080 16G</span>
+        <span>🛠 Trae</span>
+    </div>
+</div>
+
+<div class="content">
+
+<div class="phase">
+    <div class="phase-header phase-day"><span>☀️ 白天（公司 3 小时）— 理论学习</span><span>09:00 - 12:00</span></div>
+    <div class="phase-body">
+
+        <div class="task learn">
+            <div class="task-title"><span class="icon">📖</span>任务 1：Python 函数进阶（*args / **kwargs / Lambda / 闭包）<span class="tag tag-learn">学习</span><span class="tag tag-time">90 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>学习资料（按顺序看）：</strong></p>
+                <p>📚 <a href="https://docs.python.org/zh-cn/3/tutorial/controlflow.html#defining-functions" target="_blank">Python 官方教程 - 定义函数</a>（15 分钟）</p>
+                <p>📚 <a href="https://realpython.com/python-kwargs-and-args/" target="_blank">RealPython: *args 和 **kwargs 详解</a>（25 分钟）</p>
+                <p>📚 <a href="https://realpython.com/inner-functions-what-are-they-good-for/" target="_blank">RealPython: 闭包与内部函数</a>（20 分钟）</p>
+                <p>📺 <a href="https://www.bilibili.com/video/BV1c3411A7HW" target="_blank">B站：Python 高级函数特性</a>（30 分钟）</p>
+                <p><strong>必掌握知识点：</strong></p>
+                <p>• <strong>位置参数 vs 关键字参数</strong>：<code>def f(a, b, *, c, d)</code></p>
+                <p>• <strong>*args</strong>：接收任意位置参数 → 元组</p>
+                <p>• <strong>**kwargs</strong>：接收任意关键字参数 → 字典</p>
+                <p>• <strong>默认参数陷阱</strong>：<code>def f(x=[])</code> 是坑！</p>
+                <p>• <strong>Lambda</strong>：<code>lambda x: x*2</code>（对比 Swift 闭包 <code>{ $0 * 2 }</code>）</p>
+                <p>• <strong>闭包</strong>：内部函数引用外部变量</p>
+                <p>• <strong>nonlocal</strong> 关键字：修改外层作用域变量</p>
+                <div class="purpose">LangChain、PyTorch、FastAPI 全都大量使用 *args/**kwargs 设计 API，不懂这个会处处看不懂源码。</div>
+                <div class="verify-box">能解释为什么 <code>def func(**kwargs)</code> 这种签名在 AI 库里到处都是；能写一个统计调用次数的闭包计数器。</div>
+            </div>
+        </div>
+
+        <div class="task learn">
+            <div class="task-title"><span class="icon">📖</span>任务 2：Python 面向对象 + dataclass<span class="tag tag-learn">学习</span><span class="tag tag-time">90 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>学习资料：</strong></p>
+                <p>📚 <a href="https://docs.python.org/zh-cn/3/tutorial/classes.html" target="_blank">Python 官方教程 - 类</a>（35 分钟精读）</p>
+                <p>📚 <a href="https://realpython.com/python-data-classes/" target="_blank">RealPython: dataclass 完整指南</a>（30 分钟）⭐</p>
+                <p>📚 <a href="https://docs.python.org/zh-cn/3/library/dataclasses.html" target="_blank">dataclasses 官方文档</a>（参考）</p>
+                <p>📺 <a href="https://www.youtube.com/watch?v=CvQ7e6yUtnw" target="_blank">YouTube: Python OOP for Programmers</a>（25 分钟，英文）</p>
+                <p><strong>Swift vs Python OOP 对照：</strong></p>
+                <pre>// Swift
+class Dog {
+    let name: String
+    init(name: String) { self.name = name }
+    func bark() { print("\(name) 汪汪!") }
+}
+
+# Python
+class Dog:
+    def __init__(self, name: str):
+        self.name = name
+    def bark(self):
+        print(f"{self.name} 汪汪!")
+
+# Python 用 dataclass 等价于 Swift struct
+from dataclasses import dataclass
+
+@dataclass
+class Dog:
+    name: str
+    age: int = 0
+    def bark(self):
+        print(f"{self.name} 汪汪!")</pre>
+                <p><strong>必掌握知识点：</strong></p>
+                <p>• <strong>class 与 __init__</strong>：等于 Swift 的 <code>class</code> 和 <code>init</code></p>
+                <p>• <strong>self</strong>：等于 Swift 的 <code>self</code>，但必须显式写在方法第一个参数</p>
+                <p>• <strong>实例属性 vs 类属性</strong></p>
+                <p>• <strong>@property</strong>：等于 Swift computed property</p>
+                <p>• <strong>@classmethod / @staticmethod</strong></p>
+                <p>• <strong>继承</strong>：<code>class Puppy(Dog):</code></p>
+                <p>• <strong>__str__ / __repr__</strong>：等于 Swift 的 CustomStringConvertible</p>
+                <p>• <strong>@dataclass</strong>：自动生成 __init__、__repr__、__eq__，**LangChain/Pydantic 大量使用** ⭐</p>
+                <p>• <strong>没有 access control</strong>：Python 用 <code>_private</code> 约定（不强制）</p>
+                <div class="purpose">PyTorch 的 nn.Module、LangChain 的所有 Chain、Pydantic 模型，全部是 class，必须熟练。</div>
+                <div class="verify-box">能用 @dataclass 5 分钟定义一个 ChatMessage 类（role/content/timestamp 字段）。</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="phase">
+    <div class="phase-header phase-night"><span>🌙 晚上（家里 3 小时）— 动手实战</span><span>19:00 - 22:00</span></div>
+    <div class="phase-body">
+
+        <div class="task practice">
+            <div class="task-title"><span class="icon">💻</span>任务 3：封装 LLMClient 类（同步版）<span class="tag tag-practice">实战</span><span class="tag tag-time">120 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>项目目标：</strong>把昨天的散乱代码封装成可复用的 <code>LLMClient</code> 类。</p>
+                <p><strong>实现要求：</strong></p>
+                <p>在 Trae 中创建 <code>day2/llm_client.py</code>：</p>
+<pre>"""
+LLMClient - 大模型客户端封装
+功能：
+1. 同步调用 + 流式调用
+2. 多轮对话历史管理
+3. 切换模型 / 温度 / system prompt
+4. Token 计数与成本估算
+"""
+from dataclasses import dataclass, field
+from typing import Optional, List, Generator
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+@dataclass
+class ChatMessage:
+    role: str  # "user" / "assistant" / "system"
+    content: str
+
+    def to_dict(self) -> dict:
+        return {"role": self.role, "content": self.content}
+
+
+@dataclass
+class LLMClient:
+    api_key: str = field(default_factory=lambda: os.getenv("API_KEY", ""))
+    base_url: str = field(default_factory=lambda: os.getenv("API_BASE", ""))
+    model: str = field(default_factory=lambda: os.getenv("MODEL", ""))
+    temperature: float = 0.7
+    system_prompt: str = "你是一个有帮助的AI助手。"
+
+    def __post_init__(self):
+        self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        self._history: List[ChatMessage] = []
+        self.reset()
+
+    def reset(self) -> None:
+        """重置对话历史，保留 system prompt"""
+        self._history = [ChatMessage(role="system", content=self.system_prompt)]
+
+    def set_system(self, prompt: str) -> None:
+        self.system_prompt = prompt
+        self.reset()
+
+    def chat(self, user_input: str) -> str:
+        """同步对话"""
+        self._history.append(ChatMessage(role="user", content=user_input))
+        response = self._client.chat.completions.create(
+            model=self.model,
+            messages=[m.to_dict() for m in self._history],
+            temperature=self.temperature,
+        )
+        reply = response.choices[0].message.content
+        self._history.append(ChatMessage(role="assistant", content=reply))
+        return reply
+
+    def stream_chat(self, user_input: str) -> Generator[str, None, None]:
+        """流式对话（生成器）"""
+        self._history.append(ChatMessage(role="user", content=user_input))
+        stream = self._client.chat.completions.create(
+            model=self.model,
+            messages=[m.to_dict() for m in self._history],
+            temperature=self.temperature,
+            stream=True,
+        )
+        full_reply = ""
+        for chunk in stream:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                full_reply += delta
+                yield delta
+        self._history.append(ChatMessage(role="assistant", content=full_reply))
+
+    @property
+    def history_length(self) -> int:
+        return len(self._history)
+
+    def show_history(self) -> None:
+        for i, msg in enumerate(self._history):
+            print(f"[{i}] {msg.role}: {msg.content[:80]}")</pre>
+                <p><strong>再写一个交互式 CLI：</strong> <code>day2/cli.py</code></p>
+<pre>from llm_client import LLMClient
+
+def main():
+    client = LLMClient()
+    print("🤖 LLM CLI 启动（quit退出 / clear清空历史 / show查看历史）\n")
+    while True:
+        user_input = input("你: ").strip()
+        if not user_input:
+            continue
+        if user_input == "quit":
+            break
+        if user_input == "clear":
+            client.reset()
+            print("✅ 历史已清空\n")
+            continue
+        if user_input == "show":
+            client.show_history()
+            continue
+        print("AI: ", end="", flush=True)
+        for chunk in client.stream_chat(user_input):
+            print(chunk, end="", flush=True)
+        print("\n")
+
+if __name__ == "__main__":
+    main()</pre>
+                <div class="purpose">封装能力是工程师的核心能力，你后续所有 AI 项目都会从扩展这个类开始。</div>
+                <div class="verify-box">在终端运行 <code>python day2/cli.py</code>：能多轮对话、能 <code>clear</code> 清空、能 <code>show</code> 查看历史，能 <code>quit</code> 退出。</div>
+            </div>
+        </div>
+
+        <div class="task practice">
+            <div class="task-title"><span class="icon">💻</span>任务 4：pytest 单元测试入门<span class="tag tag-practice">实战</span><span class="tag tag-time">45 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>学习资料（边做边查）：</strong></p>
+                <p>📚 <a href="https://docs.pytest.org/en/stable/getting-started.html" target="_blank">pytest 官方 Getting Started</a></p>
+                <p><strong>操作步骤：</strong></p>
+                <p>1. <code>pip install pytest pytest-mock</code></p>
+                <p>2. 创建 <code>day2/test_llm_client.py</code>：</p>
+<pre>import pytest
+from llm_client import LLMClient, ChatMessage
+
+
+def test_chat_message_to_dict():
+    msg = ChatMessage(role="user", content="hello")
+    assert msg.to_dict() == {"role": "user", "content": "hello"}
+
+
+def test_client_initialization():
+    client = LLMClient()
+    assert client.history_length == 1  # 只有 system prompt
+    assert client.temperature == 0.7
+
+
+def test_reset_clears_history():
+    client = LLMClient()
+    client._history.append(ChatMessage(role="user", content="test"))
+    assert client.history_length == 2
+    client.reset()
+    assert client.history_length == 1
+
+
+def test_set_system_resets():
+    client = LLMClient()
+    client.set_system("你是一只猫")
+    assert client.system_prompt == "你是一只猫"
+    assert client.history_length == 1
+
+
+# 进阶：用 mock 测试 chat 方法（不真实调用 API）
+def test_chat_with_mock(mocker):
+    client = LLMClient()
+    mock_response = mocker.Mock()
+    mock_response.choices = [mocker.Mock()]
+    mock_response.choices[0].message.content = "mocked reply"
+    mocker.patch.object(client._client.chat.completions, "create", return_value=mock_response)
+    reply = client.chat("hi")
+    assert reply == "mocked reply"
+    assert client.history_length == 3  # system + user + assistant</pre>
+                <p>3. 运行测试：<code>pytest day2/ -v</code></p>
+                <div class="purpose">写测试是大厂工程师的基本素养，简历加分项；mock 是后续测试 LangChain/Agent 的核心技能。</div>
+                <div class="verify-box">5 个测试用例全部通过（PASSED）。</div>
+            </div>
+        </div>
+
+        <div class="task verify">
+            <div class="task-title"><span class="icon">✅</span>任务 5：Git 提交 + 学习复盘<span class="tag tag-verify">复盘</span><span class="tag tag-time">15 分钟</span></div>
+            <div class="task-detail">
+                <p>1. <code>git add . && git commit -m "Day 2: LLMClient封装 + pytest" && git push</code></p>
+                <p>2. 更新 README 进度</p>
+                <p>3. 复盘：今天哪些知识点感觉模糊？记下来明天再查</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="checklist">
+    <h3>📋 Day 2 完成检查清单</h3>
+    <div class="check-item"><input type="checkbox" id="c1"><label for="c1">理解 *args 和 **kwargs，能写出例子</label></div>
+    <div class="check-item"><input type="checkbox" id="c2"><label for="c2">理解 @dataclass 的作用与用法</label></div>
+    <div class="check-item"><input type="checkbox" id="c3"><label for="c3"><code>llm_client.py</code> 完成并运行成功</label></div>
+    <div class="check-item"><input type="checkbox" id="c4"><label for="c4"><code>cli.py</code> 多轮对话流畅，clear/show/quit 都正常</label></div>
+    <div class="check-item"><input type="checkbox" id="c5"><label for="c5">pytest 5 个用例全部 PASSED</label></div>
+    <div class="check-item"><input type="checkbox" id="c6"><label for="c6">Git push 成功，README 进度更新</label></div>
+    <div class="check-item"><input type="checkbox" id="c7"><label for="c7">能解释闭包与装饰器的区别</label></div>
+</div>
+
+<div class="notes">
+    <h3>📝 今日学习笔记</h3>
+    <textarea placeholder="收获 1：&#10;收获 2：&#10;收获 3：&#10;疑问：&#10;明天重点："></textarea>
+</div>
+
+<div class="tip">
+    <strong>📌 明天（Day 3）预告：</strong>Python 异步编程（async/await/asyncio.gather）+ 类型标注进阶（typing/TypedDict）+ 装饰器原理 + 把 LLMClient 重构为异步版（性能提升 5-10 倍）。
+</div>
+
+</div>
+</div>
+
+</body>
+</html>

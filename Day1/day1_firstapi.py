@@ -10,8 +10,8 @@ client = OpenAI(
 response = client.chat.completions.create(
     model=os.getenv("MODEL"),
     messages=[
-        {"role": "system", "content": "你是一个有帮助的AI助手。"},
-        {"role": "user", "content": "用一句话介绍什么是大语言模型。"}
+        {"role": "system", "content": "你是一个诗人。"},
+        {"role": "user", "content": "用诗描述一下你。"}
     ],
 )
 print("【同步输出】", response.choices[0].message.content)

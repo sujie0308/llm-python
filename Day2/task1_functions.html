@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务 1 - Python 函数进阶</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #1a1a2e; line-height: 1.7; }
+.page { max-width: 920px; margin: 0 auto; background: #fff; }
+.header { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: #fff; padding: 28px 36px; }
+.header .badge { display: inline-block; background: #e94560; padding: 4px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; margin-bottom: 10px; }
+.header h1 { font-size: 24px; margin-bottom: 4px; }
+.header .sub { opacity: 0.75; font-size: 14px; margin-top: 4px; }
+.content { padding: 28px 36px; }
+.section { margin-bottom: 32px; }
+.section-title { font-size: 18px; font-weight: 700; color: #0d47a1; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; border-left: 4px solid #0d47a1; padding-left: 12px; }
+.card { border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+.card-header { padding: 12px 18px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+.card-body { padding: 16px 18px; }
+.bg-blue { background: #e3f2fd; color: #0d47a1; }
+.bg-green { background: #e8f5e9; color: #2e7d32; }
+.bg-purple { background: #ede7f6; color: #4a148c; }
+.bg-orange { background: #fff3e0; color: #ef6c00; }
+.bg-red { background: #fce4ec; color: #c62828; }
+.item { padding: 14px 16px; margin-bottom: 12px; background: #fafafa; border-radius: 8px; border-left: 4px solid #ddd; }
+.item.blue { border-left-color: #2196f3; }
+.item.green { border-left-color: #4caf50; }
+.item.orange { border-left-color: #ff9800; }
+.item.red { border-left-color: #e53935; }
+.item-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.tag-blue { background: #e3f2fd; color: #1565c0; }
+.tag-green { background: #e8f5e9; color: #2e7d32; }
+.tag-orange { background: #fff3e0; color: #ef6c00; }
+.tag-purple { background: #f3e5f5; color: #7b1fa2; }
+.tag-red { background: #fce4ec; color: #c62828; }
+.detail { font-size: 13px; color: #444; }
+.detail p { margin: 5px 0; }
+.detail code { background: #f5f5f5; padding: 1px 6px; border-radius: 3px; font-family: "Cascadia Code", "Fira Code", monospace; font-size: 12px; color: #c62828; }
+pre { background: #1e1e2e; color: #cdd6f4; padding: 14px 18px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 10px 0; font-family: "Cascadia Code", "Fira Code", monospace; line-height: 1.6; }
+pre .cm { color: #6c7086; }
+pre .kw { color: #cba6f7; }
+pre .fn { color: #89b4fa; }
+pre .str { color: #a6e3a1; }
+pre .num { color: #fab387; }
+pre .op { color: #89dceb; }
+pre .dec { color: #f38ba8; }
+table { width: 100%; font-size: 13px; border-collapse: collapse; margin: 10px 0; }
+table th { background: #e3f2fd; padding: 8px 12px; text-align: left; font-weight: 600; color: #0d47a1; }
+table td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+table tr:hover td { background: #f8fafc; }
+table.cmp th { background: #1e1e2e; color: #cdd6f4; }
+table.cmp td { font-family: "Cascadia Code", monospace; font-size: 12px; }
+.hl { background: #fffde7; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #fbc02d; margin: 10px 0; font-size: 13px; }
+.hl-red { background: #fce4ec; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #e53935; margin: 10px 0; font-size: 13px; }
+.goal-box { background: #e8eaf6; border-radius: 8px; padding: 12px 16px; margin-top: 14px; font-size: 13px; }
+.goal-box::before { content: "🎯 目的："; font-weight: 700; }
+.verify-box { background: #fff8e1; border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 13px; }
+.verify-box::before { content: "✅ 验证标准："; font-weight: 700; color: #ef6c00; }
+.tip { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 12px 16px; border-radius: 8px; margin: 14px 0; font-size: 13px; border-left: 4px solid #4caf50; }
+.footer { text-align: center; padding: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 13px; }
+@media (max-width: 600px) {
+    .header { padding: 24px 20px; }
+    .header h1 { font-size: 20px; }
+    .content { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+<div class="header">
+    <div class="badge">DAY 2 · 任务 1</div>
+    <h1>Python 函数进阶</h1>
+    <div class="sub">*args / **kwargs / Lambda / 闭包 / 默认参数陷阱</div>
+</div>
+
+<div class="content">
+
+<div class="hl" style="margin-bottom:20px;">
+    <strong>📌 为什么重要？</strong> LangChain、PyTorch、FastAPI 全都大量使用 <code>*args</code> / <code>**kwargs</code> 设计 API，不懂这个会处处看不懂源码。
+</div>
+
+<!-- ============ 1. 参数类型 ============ -->
+<div class="section">
+<div class="section-title">① 参数类型：位置参数 vs 关键字参数</div>
+
+<div class="card">
+    <div class="card-header bg-blue"><span>📌 基础概念</span></div>
+    <div class="card-body">
+        <table>
+            <tr><th>类型</th><th>定义</th><th>调用方式</th><th>示例</th></tr>
+            <tr>
+                <td><strong>位置参数</strong></td>
+                <td>按顺序传入</td>
+                <td><code>f(1, 2, 3)</code></td>
+                <td>顺序决定谁是谁</td>
+            </tr>
+            <tr>
+                <td><strong>关键字参数</strong></td>
+                <td>按名称传入</td>
+                <td><code>f(a=1, b=2)</code></td>
+                <td>顺序无关，名称匹配</td>
+            </tr>
+            <tr>
+                <td><strong>默认参数</strong></td>
+                <td>定义时给默认值</td>
+                <td><code>f(a=1)</code> 或 <code>f()</code></td>
+                <td>调用时可选</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="item blue">
+    <div class="item-title"><span>💡 混合用法：仅关键字参数</span></div>
+    <div class="detail">
+        <pre><span class="kw">def</span> <span class="fn">f</span>(a, b, <span class="op">*</span>, c, d):  <span class="cm"># * 后面的参数 <strong>必须</strong> 用关键字传入</span>
+    <span class="kw">pass</span>
+
+<span class="cm"># 正确</span>
+f(<span class="num">1</span>, <span class="num">2</span>, c=<span class="num">3</span>, d=<span class="num">4</span>)
+
+<span class="cm"># 错误！c 和 d 不能按位置传</span>
+<span class="cm"># f(1, 2, 3, 4)  → TypeError</span></pre>
+        <table>
+            <tr><th>符号</th><th>含义</th></tr>
+            <tr><td><code>, /,</code></td><td>斜杠前的参数只能是位置参数</td></tr>
+            <tr><td><code>, *,</code></td><td>星号后的参数只能是关键字参数</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="hl">
+    <strong>💡 记住：</strong><code>def f(a, b, /, c, d, *, e, f)</code> → <code>a,b</code>只能按位置 · <code>c,d</code>都可以 · <code>e,f</code>只能用关键字
+</div>
+</div>
+
+<!-- ============ 2. *args ============ -->
+<div class="section">
+<div class="section-title">② *args — 任意数量位置参数</div>
+
+<div class="card">
+    <div class="card-header bg-green"><span>📌 定义与使用</span></div>
+    <div class="card-body">
+        <pre><span class="kw">def</span> <span class="fn">sum_all</span>(<span class="op">*</span>args):
+    <span class="str">"""接收任意数量的位置参数"""</span>
+    print(<span class="str">f"类型: {type(args)}"</span>)  <span class="cm"># &lt;class 'tuple'&gt;</span>
+    print(<span class="str">f"内容: {args}"</span>)       <span class="cm"># (1, 2, 3, 4, 5)</span>
+    <span class="kw">return</span> <span class="fn">sum</span>(args)
+
+<span class="fn">sum_all</span>(<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>)   <span class="cm"># → 15</span></pre>
+
+        <table>
+            <tr><th>特性</th><th>说明</th></tr>
+            <tr><td>收集方式</td><td>所有多出的位置参数打包成 <strong>元组 (tuple)</strong></td></tr>
+            <tr><td>命名约定</td><td><code>args</code> 是惯例名，也可以用别的，但<strong>必须加 *</strong></td></tr>
+            <tr><td>个数</td><td>0 个到任意多个</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="item green">
+    <div class="item-title"><span>💡 典型场景：print()、zip()</span></div>
+    <div class="detail">
+        <pre><span class="kw">def</span> <span class="fn">log</span>(level, <span class="op">*</span>messages):
+    <span class="str">"""第一个是日志级别，后面任意多条消息"""</span>
+    print(<span class="str">f"[{level}]"</span>, <span class="str">" | "</span>.join(messages))
+
+<span class="fn">log</span>(<span class="str">"INFO"</span>, <span class="str">"启动成功"</span>, <span class="str">"模型已加载"</span>, <span class="str">"GPU Ready"</span>)
+<span class="cm"># 输出：[INFO] 启动成功 | 模型已加载 | GPU Ready</span></pre>
+    </div>
+</div>
+</div>
+
+<!-- ============ 3. **kwargs ============ -->
+<div class="section">
+<div class="section-title">③ **kwargs — 任意数量关键字参数</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 定义与使用</span></div>
+    <div class="card-body">
+        <pre><span class="kw">def</span> <span class="fn">create_config</span>(<span class="op">**</span>kwargs):
+    <span class="str">"""接收任意数量的关键字参数"""</span>
+    print(<span class="str">f"类型: {type(kwargs)}"</span>)  <span class="cm"># &lt;class 'dict'&gt;</span>
+    print(<span class="str">f"内容: {kwargs}"</span>)       <span class="cm"># {'model': 'qwen', 'temp': 0.7}</span>
+    <span class="kw">for</span> key, value <span class="kw">in</span> kwargs.items():
+        print(<span class="str">f"  {key} = {value}"</span>)
+
+<span class="fn">create_config</span>(model=<span class="str">"qwen"</span>, temp=<span class="num">0.7</span>, max_tokens=<span class="num">2048</span>)</pre>
+
+        <table>
+            <tr><th>特性</th><th>说明</th></tr>
+            <tr><td>收集方式</td><td>所有关键字参数打包成 <strong>字典 (dict)</strong></td></tr>
+            <tr><td>命名约定</td><td><code>kwargs</code> 是惯例名，<strong>必须加 **</strong></td></tr>
+            <tr><td>与 *args 区别</td><td><code>*args</code> → 元组 · <code>**kwargs</code> → 字典</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="item purple">
+    <div class="item-title"><span>💡 为什么 AI 库里到处都是 **kwargs？</span></div>
+    <div class="detail">
+        <p>LangChain / PyTorch / FastAPI 大量使用 <code>**kwargs</code> 把参数"透传"给下层：</p>
+        <pre><span class="kw">class</span> <span class="fn">MyChain</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, <span class="op">**</span>kwargs):
+        <span class="cm"># 接收所有参数，传给父类</span>
+        <span class="built_in">super</span>().<span class="fn">__init__</span>(<span class="op">**</span>kwargs)
+
+<span class="cm"># 不必记住所有参数，直接传就行</span>
+chain = MyChain(model=<span class="str">"qwen"</span>, temperature=<span class="num">0.8</span>, top_p=<span class="num">0.9</span>)</pre>
+    </div>
+</div>
+</div>
+
+<!-- ============ 4. 默认参数陷阱 ============ -->
+<div class="section">
+<div class="section-title">④ 默认参数陷阱（经典面试题）</div>
+
+<div class="card">
+    <div class="card-header bg-red"><span>⚠️ 可变默认参数只初始化一次</span></div>
+    <div class="card-body">
+        <pre><span class="cm"># ❌ 错误写法</span>
+<span class="kw">def</span> <span class="fn">add_item</span>(item, lst=[]):  <span class="cm"># 默认空列表只在函数定义时创建一次！</span>
+    lst.append(item)
+    <span class="kw">return</span> lst
+
+print(<span class="fn">add_item</span>(<span class="num">1</span>))  <span class="cm"># → [1]</span>
+print(<span class="fn">add_item</span>(<span class="num">2</span>))  <span class="cm"># → [1, 2]  ← 不是 [2]！</span>
+print(<span class="fn">add_item</span>(<span class="num">3</span>))  <span class="cm"># → [1, 2, 3]</span>
+
+<span class="cm"># ✅ 正确写法：用 None 代替</span>
+<span class="kw">def</span> <span class="fn">add_item</span>(item, lst=<span class="kw">None</span>):
+    <span class="kw">if</span> lst <span class="kw">is</span> <span class="kw">None</span>:
+        lst = []
+    lst.append(item)
+    <span class="kw">return</span> lst</pre>
+
+        <div class="hl-red">
+            <strong>💡 规则：</strong>默认参数在<strong>函数定义时</strong>求值，只执行一次。所以不要用 <code>[]</code>、<code>{}</code>、<code>set()</code> 等可变对象作为默认值，用 <code>None</code> 代替。
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============ 5. Lambda ============ -->
+<div class="section">
+<div class="section-title">⑤ Lambda 表达式（匿名函数）</div>
+
+<div class="card">
+    <div class="card-header bg-blue"><span>📌 语法与对比</span></div>
+    <div class="card-body">
+
+        <table class="cmp">
+            <tr><th>语言</th><th>语法</th><th>说明</th></tr>
+            <tr><td><strong>Python</strong></td><td><code>lambda x: x * 2</code></td><td>只能写单行表达式</td></tr>
+            <tr><td><strong>Swift</strong></td><td><code>{ $0 * 2 }</code></td><td>简写参数 <code>$0</code></td></tr>
+        </table>
+
+        <pre><span class="cm"># Python Lambda — 相当于一个"一次性"的简单函数</span>
+<span class="fn">lambda</span> x, y: x + y                  <span class="cm"># 两个参数相加</span>
+<span class="fn">sorted</span>(list, key=<span class="kw">lambda</span> x: x[<span class="num">1</span>])   <span class="cm"># 按第二个元素排序</span>
+<span class="fn">list</span>(<span class="fn">map</span>(<span class="kw">lambda</span> x: x * <span class="num">2</span>, [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))  <span class="cm"># 每个元素乘2</span></pre>
+
+        <table>
+            <tr><th>Lambda</th><th>vs</th><th>普通函数 (def)</th></tr>
+            <tr><td>没有函数名</td><td>→</td><td>有名字</td></tr>
+            <tr><td>单行表达式（<code>return</code> 隐式）</td><td>→</td><td>多行语句，需要 <code>return</code></td></tr>
+            <tr><td>适合简单逻辑</td><td>→</td><td>适合复杂逻辑</td></tr>
+        </table>
+
+        <div class="hl">
+            <strong>💡 Day 1 的例子：</strong><code>sorted(hot_cities, key=lambda x: x[1], reverse=True)</code><br>
+            <code>lambda x: x[1]</code> 表示"对每个元组 <code>(城市, 温度)</code>，取第 2 个元素（温度）作为排序依据"
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============ 6. 闭包 ============ -->
+<div class="section">
+<div class="section-title">⑥ 闭包（Closure）</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 定义：内部函数引用外部变量</span></div>
+    <div class="card-body">
+        <pre><span class="kw">def</span> <span class="fn">make_counter</span>():
+    count = <span class="num">0</span>                      <span class="cm"># 外部变量</span>
+    <span class="kw">def</span> <span class="fn">counter</span>():                  <span class="cm"># 内部函数（闭包）</span>
+        <span class="kw">nonlocal</span> count               <span class="cm"># 声明要修改外部变量</span>
+        count += <span class="num">1</span>
+        <span class="kw">return</span> count
+    <span class="kw">return</span> counter                   <span class="cm"># 返回内部函数</span>
+
+<span class="cm"># 使用</span>
+my_counter = <span class="fn">make_counter</span>()         <span class="cm"># my_counter 现在是一个闭包</span>
+print(<span class="fn">my_counter</span>())                 <span class="cm"># → 1</span>
+print(<span class="fn">my_counter</span>())                 <span class="cm"># → 2</span>
+print(<span class="fn">my_counter</span>())                 <span class="cm"># → 3</span>
+
+<span class="cm"># 独立的计数器</span>
+counter2 = <span class="fn">make_counter</span>()
+print(<span class="fn">counter2</span>())                  <span class="cm"># → 1 （独立状态！）</span></pre>
+
+        <table>
+            <tr><th>闭包三要素</th><th>说明</th></tr>
+            <tr><td>① 外部函数</td><td>定义一个变量</td></tr>
+            <tr><td>② 内部函数</td><td>引用外部函数的变量</td></tr>
+            <tr><td>③ 返回内部函数</td><td>让外部可以调用这个闭包</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="item purple">
+    <div class="item-title"><span>💡 对比 Swift 闭包</span></div>
+    <div class="detail">
+        <p><strong>Python 闭包</strong> ≈ Swift 中函数内部捕获外部变量：</p>
+        <pre><span class="cm">// Swift 等效</span>
+<span class="kw">func</span> makeCounter() -> () -> Int {
+    <span class="kw">var</span> count = <span class="num">0</span>
+    <span class="kw">return</span> {                         <span class="cm">// 闭包</span>
+        count += <span class="num">1</span>
+        <span class="kw">return</span> count
+    }
+}</pre>
+    </div>
+</div>
+
+<div class="item green">
+    <div class="item-title"><span>💡 典型应用场景</span></div>
+    <div class="detail">
+        <p><strong>① 统计调用次数（如上）</strong></p>
+        <p><strong>② 缓存计算结果：</strong></p>
+        <pre><span class="kw">def</span> <span class="fn">make_cache</span>():
+    cache = {}
+    <span class="kw">def</span> <span class="fn">get_or_compute</span>(key, compute_func):
+        <span class="kw">if</span> key <span class="kw">not in</span> cache:
+            cache[key] = <span class="fn">compute_func</span>()
+        <span class="kw">return</span> cache[key]
+    <span class="kw">return</span> get_or_compute</pre>
+        <p><strong>③ 装饰器（明天学）</strong></p>
+    </div>
+</div>
+</div>
+
+<!-- ============ 7. nonlocal ============ -->
+<div class="section">
+<div class="section-title">⑦ nonlocal 关键字</div>
+
+<div class="card">
+    <div class="card-header bg-orange"><span>📌 修改外层作用域变量</span></div>
+    <div class="card-body">
+        <pre><span class="kw">def</span> <span class="fn">outer</span>():
+    x = <span class="str">"外部"</span>
+    <span class="kw">def</span> <span class="fn">inner</span>():
+        <span class="kw">nonlocal</span> x            <span class="cm"># 声明 x 来自外层函数</span>
+        x = <span class="str">"已被内部修改"</span>
+    <span class="fn">inner</span>()
+    print(x)                   <span class="cm"># → "已被内部修改"</span></pre>
+
+        <table>
+            <tr><th>关键字</th><th>作用范围</th><th>相似概念</th></tr>
+            <tr><td><code>nonlocal</code></td><td>修改外层<strong>函数</strong>的变量</td><td>≈ Swift 闭包捕获 <code>var</code></td></tr>
+            <tr><td><code>global</code></td><td>修改<strong>全局</strong>变量</td><td>很少用，不好维护</td></tr>
+        </table>
+
+        <div class="hl">
+            <strong>💡 不用 nonlocal 会怎样？</strong>没有 <code>nonlocal</code>，内部函数对 <code>x = ...</code> 会创建一个<strong>新的局部变量</strong>，不会修改外层的 <code>x</code>。
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============ 8. 综合对比 ============ -->
+<div class="section">
+<div class="section-title">⑧ 综合对比：Python vs Swift</div>
+
+<div class="card">
+    <div class="card-header bg-blue"><span>📌 函数特性对照表</span></div>
+    <div class="card-body">
+        <table class="cmp">
+            <tr><th>概念</th><th>Python</th><th>Swift</th></tr>
+            <tr><td>匿名函数</td><td><code>lambda x: x * 2</code></td><td><code>{ $0 * 2 }</code></td></tr>
+            <tr><td>可变参数</td><td><code>def f(*args)</code></td><td><code>func f(_ args: Int...)</code></td></tr>
+            <tr><td>关键字参数</td><td><code>def f(**kwargs)</code></td><td>外部参数标签 <code>f(a b: Int)</code></td></tr>
+            <tr><td>闭包</td><td>内部函数 + <code>nonlocal</code></td><td>闭包表达式捕获变量</td></tr>
+            <tr><td>默认参数陷阱</td><td>可变默认参数有坑⚠️</td><td>无此问题</td></tr>
+            <tr><td>仅关键字参数</td><td><code>def f(*, key)</code></td><td>默认就是</td></tr>
+        </table>
+    </div>
+</div>
+</div>
+
+<!-- ============ 验证标准 ============ -->
+<div class="section">
+<div class="section-title">✅ 验证标准</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="verify-box" style="border-left: 4px solid #ff9800;">
+            能解释为什么 <code>def func(**kwargs)</code> 这种签名在 AI 库里到处都是<br>
+            能写一个统计调用次数的闭包计数器
+        </div>
+
+        <div class="tip" style="margin-top:14px;">
+            <strong>💡 面试自测：</strong>
+            <ol style="margin-left:18px;margin-top:6px;">
+                <li><code>*args</code> 和 <code>**kwargs</code> 分别返回什么类型？ → <strong>元组</strong> 和 <strong>字典</strong></li>
+                <li>为什么 <code>def f(x=[])</code> 是坑？ → 默认列表只创建一次</li>
+                <li>闭包三要素是什么？ → 外部函数 · 内部函数 · 返回内部函数</li>
+                <li><code>nonlocal</code> 的作用？ → 修改外层函数变量</li>
+            </ol>
+        </div>
+    </div>
+</div>
+</div>
+
+</div>
+
+<!-- ============ 任务 2：Python OOP + dataclass ============ -->
+<div class="section" style="margin-top:40px;padding-top:30px;border-top:3px solid #e0e0e0;">
+<div class="section-title" style="font-size:22px;color:#e94560;">📖 任务 2：Python 面向对象 + dataclass</div>
+
+<div class="hl" style="margin-bottom:20px;">
+    <strong>📌 为什么重要？</strong> PyTorch 的 <code>nn.Module</code>、LangChain 的所有 Chain、Pydantic 模型，全部是 class，必须熟练。
+</div>
+
+<!-- ============ 1. class 与 __init__ ============ -->
+<div class="section">
+<div class="section-title">① class 与 __init__ — 构造函数</div>
+
+<div class="card">
+    <div class="card-header bg-blue"><span>📌 Swift vs Python 对比</span></div>
+    <div class="card-body">
+        <table class="cmp">
+            <tr><th>概念</th><th>Swift</th><th>Python</th></tr>
+            <tr><td>定义类</td><td><code>class Dog { }</code></td><td><code>class Dog:</code></td></tr>
+            <tr><td>构造函数</td><td><code>init(name: String)</code></td><td><code>def __init__(self, name: str):</code></td></tr>
+            <tr><td>访问自己</td><td><code>self.name</code></td><td><code>self.name</code></td></tr>
+            <tr><td>方法</td><td><code>func bark()</code></td><td><code>def bark(self):</code></td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="item blue">
+    <div class="item-title"><span>💡 完整例子</span></div>
+    <div class="detail">
+        <pre><span class="cm"># Swift</span>
+<span class="kw">class</span> Dog {
+    <span class="kw">let</span> name: String
+    <span class="kw">var</span> age: Int
+    <span class="kw">init</span>(name: String, age: Int = <span class="num">0</span>) {
+        <span class="kw">self</span>.name = name
+        <span class="kw">self</span>.age = age
+    }
+    <span class="kw">func</span> bark() { print(<span class="str">"\(name) 汪汪!"</span>) }
+}
+
+<span class="cm"># Python</span>
+<span class="kw">class</span> <span class="fn">Dog</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name: str, age: int = <span class="num">0</span>):
+        self.name = name
+        self.age = age
+
+    <span class="kw">def</span> <span class="fn">bark</span>(self):
+        print(<span class="str">f"{self.name} 汪汪!"</span>)
+
+<span class="cm"># 使用</span>
+dog = <span class="fn">Dog</span>(<span class="str">"旺财"</span>, age=<span class="num">3</span>)
+dog.<span class="fn">bark</span>()  <span class="cm"># → 旺财 汪汪!</span></pre>
+    </div>
+</div>
+
+<div class="item orange">
+    <div class="item-title"><span>⚠️ self 必须显式写</span></div>
+    <div class="detail">
+        <p>Python 的 <code>self</code> 必须写在每个方法的<strong>第一个参数</strong>，调用时自动传入：</p>
+        <pre><span class="kw">class</span> <span class="fn">Dog</span>:
+    <span class="kw">def</span> <span class="fn">bark</span>(self):      <span class="cm"># self 是第一个参数</span>
+        print(self.name)  <span class="cm"># 访问属性也必须用 self.</span>
+
+dog.<span class="fn">bark</span>()  <span class="cm"># 调用时不传 self，Python 自动传</span></pre>
+        <p>≈ Swift 中方法内部自动有 <code>self</code>，但 Python 要求你显式声明</p>
+    </div>
+</div>
+</div>
+
+<!-- ============ 2. 实例属性 vs 类属性 ============ -->
+<div class="section">
+<div class="section-title">② 实例属性 vs 类属性</div>
+
+<div class="card">
+    <div class="card-header bg-green"><span>📌 关键区别</span></div>
+    <div class="card-body">
+        <pre><span class="kw">class</span> <span class="fn">Dog</span>:
+    species = <span class="str">"犬科"</span>          <span class="cm"># 类属性：所有实例共享</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name):
+        self.name = name       <span class="cm"># 实例属性：每个实例独立</span>
+
+dog1 = <span class="fn">Dog</span>(<span class="str">"旺财"</span>)
+dog2 = <span class="fn">Dog</span>(<span class="str">"小黑"</span>)
+
+print(dog1.name)     <span class="cm"># → 旺财（实例属性，各自独立）</span>
+print(dog2.name)     <span class="cm"># → 小黑</span>
+print(dog1.species)  <span class="cm"># → 犬科（类属性，共享）</span>
+print(dog2.species)  <span class="cm"># → 犬科</span></pre>
+
+        <table>
+            <tr><th>对比</th><th>实例属性</th><th>类属性</th></tr>
+            <tr><td>定义位置</td><td><code>__init__</code> 中用 <code>self.xxx</code></td><td>类体内直接写</td></tr>
+            <tr><td>归属</td><td>每个实例独有</td><td>类本身拥有，所有实例共享</td></tr>
+            <tr><td>Swift 对比</td><td>≈ 实例属性</td><td>≈ <code>static</code> 属性</td></tr>
+        </table>
+    </div>
+</div>
+</div>
+
+<!-- ============ 3. @property ============ -->
+<div class="section">
+<div class="section-title">③ @property — 计算属性</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 等于 Swift 的 computed property</span></div>
+    <div class="card-body">
+        <pre><span class="kw">class</span> <span class="fn">Circle</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, radius):
+        self.radius = radius
+
+    <span class="dec">@property</span>
+    <span class="kw">def</span> <span class="fn">area</span>(self):          <span class="cm"># 像属性一样访问，实际是方法</span>
+        <span class="kw">return</span> <span class="num">3.14</span> * self.radius ** <span class="num">2</span>
+
+    <span class="dec">@property</span>
+    <span class="kw">def</span> <span class="fn">diameter</span>(self):
+        <span class="kw">return</span> self.radius * <span class="num">2</span>
+
+c = <span class="fn">Circle</span>(<span class="num">5</span>)
+print(c.area)      <span class="cm"># → 78.5（像属性，不用加括号）</span>
+print(c.diameter)  <span class="cm"># → 10</span></pre>
+
+        <table>
+            <tr><th>Python</th><th>Swift</th></tr>
+            <tr><td><code>@property</code> + <code>def xxx(self):</code></td><td><code>var xxx: Type { return ... }</code></td></tr>
+        </table>
+    </div>
+</div>
+</div>
+
+<!-- ============ 4. @classmethod / @staticmethod ============ -->
+<div class="section">
+<div class="section-title">④ @classmethod / @staticmethod</div>
+
+<div class="card">
+    <div class="card-header bg-orange"><span>📌 三种方法类型</span></div>
+    <div class="card-body">
+        <pre><span class="kw">class</span> <span class="fn">Dog</span>:
+    species = <span class="str">"犬科"</span>
+
+    <span class="kw">def</span> <span class="fn">bark</span>(self):              <span class="cm"># ① 实例方法：需要 self</span>
+        print(<span class="str">f"{self.name} 汪汪!"</span>)
+
+    <span class="dec">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">get_species</span>(cls):        <span class="cm"># ② 类方法：需要 cls（类本身）</span>
+        <span class="kw">return</span> cls.species
+
+    <span class="dec">@staticmethod</span>
+    <span class="kw">def</span> <span class="fn">is_dog</span>(name):             <span class="cm"># ③ 静态方法：不需要 self/cls</span>
+        <span class="kw">return</span> name <span class="kw">in</span> [<span class="str">"旺财"</span>, <span class="str">"小黑"</span>]
+
+<span class="cm"># 调用方式</span>
+dog = <span class="fn">Dog</span>(<span class="str">"旺财"</span>)
+dog.<span class="fn">bark</span>()                    <span class="cm"># 实例调用</span>
+<span class="fn">Dog</span>.<span class="fn">get_species</span>()            <span class="cm"># 类调用（不需要实例）</span>
+<span class="fn">Dog</span>.<span class="fn">is_dog</span>(<span class="str">"旺财"</span>)            <span class="cm"># 类调用（不需要实例）</span></pre>
+
+        <table>
+            <tr><th>类型</th><th>装饰器</th><th>第一个参数</th><th>能访问</th><th>调用方式</th></tr>
+            <tr><td>实例方法</td><td>无</td><td><code>self</code></td><td>实例属性 + 类属性</td><td><code>obj.method()</code></td></tr>
+            <tr><td>类方法</td><td><code>@classmethod</code></td><td><code>cls</code></td><td>类属性</td><td><code>Class.method()</code></td></tr>
+            <tr><td>静态方法</td><td><code>@staticmethod</code></td><td>无</td><td>都不访问</td><td><code>Class.method()</code></td></tr>
+        </table>
+    </div>
+</div>
+</div>
+
+<!-- ============ 5. 继承 ============ -->
+<div class="section">
+<div class="section-title">⑤ 继承</div>
+
+<div class="card">
+    <div class="card-header bg-blue"><span>📌 语法：class 子类(父类)</span></div>
+    <div class="card-body">
+        <pre><span class="kw">class</span> <span class="fn">Animal</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name):
+        self.name = name
+
+    <span class="kw">def</span> <span class="fn">speak</span>(self):
+        <span class="kw">return</span> <span class="str">"..."</span>
+
+<span class="kw">class</span> <span class="fn">Dog</span>(Animal):          <span class="cm"># 继承 Animal</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, breed):
+        <span class="built_in">super</span>().<span class="fn">__init__</span>(name)  <span class="cm"># 调用父类构造函数</span>
+        self.breed = breed
+
+    <span class="kw">def</span> <span class="fn">speak</span>(self):             <span class="cm"># 重写父类方法</span>
+        <span class="kw">return</span> <span class="str">f"{self.name} 汪汪!"</span>
+
+<span class="kw">class</span> <span class="fn">Cat</span>(Animal):
+    <span class="kw">def</span> <span class="fn">speak</span>(self):
+        <span class="kw">return</span> <span class="str">f"{self.name} 喵喵!"</span>
+
+dog = <span class="fn">Dog</span>(<span class="str">"旺财"</span>, <span class="str">"金毛"</span>)
+cat = <span class="fn">Cat</span>(<span class="str">"咪咪"</span>)
+print(dog.<span class="fn">speak</span>())  <span class="cm"># → 旺财 汪汪!</span>
+print(cat.<span class="fn">speak</span>())  <span class="cm"># → 咪咪 喵喵!</span></pre>
+
+        <table>
+            <tr><th>Python</th><th>Swift</th></tr>
+            <tr><td><code>class Dog(Animal):</code></td><td><code>class Dog: Animal { }</code></td></tr>
+            <tr><td><code>super().__init__(name)</code></td><td><code>super.init(name: name)</code></td></tr>
+        </table>
+    </div>
+</div>
+</div>
+
+<!-- ============ 6. __str__ / __repr__ ============ -->
+<div class="section">
+<div class="section-title">⑥ __str__ / __repr__ — 打印友好</div>
+
+<div class="card">
+    <div class="card-header bg-green"><span>📌 等于 Swift 的 CustomStringConvertible</span></div>
+    <div class="card-body">
+        <pre><span class="kw">class</span> <span class="fn">Dog</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, age):
+        self.name = name
+        self.age = age
+
+    <span class="kw">def</span> <span class="fn">__str__</span>(self):        <span class="cm"># 给 print() 和 str() 用</span>
+        <span class="kw">return</span> <span class="str">f"🐶 {self.name}（{self.age}岁）"</span>
+
+    <span class="kw">def</span> <span class="fn">__repr__</span>(self):       <span class="cm"># 给开发者调试用</span>
+        <span class="kw">return</span> <span class="str">f"Dog(name='{self.name}', age={self.age})"</span>
+
+dog = <span class="fn">Dog</span>(<span class="str">"旺财"</span>, <span class="num">3</span>)
+print(dog)       <span class="cm"># → 🐶 旺财（3岁）</span>
+print(<span class="fn">repr</span>(dog))  <span class="cm"># → Dog(name='旺财', age=3)</span></pre>
+
+        <table>
+            <tr><th>方法</th><th>用途</th><th>Swift 对比</th></tr>
+            <tr><td><code>__str__</code></td><td>给人看的，<code>print()</code> 调用</td><td><code>description</code></td></tr>
+            <tr><td><code>__repr__</code></td><td>给开发者调试的，<code>repr()</code> 调用</td><td><code>debugDescription</code></td></tr>
+        </table>
+    </div>
+</div>
+</div>
+
+<!-- ============ 7. @dataclass ============ -->
+<div class="section">
+<div class="section-title">⑦ @dataclass — 自动生成样板代码 ⭐</div>
+
+<div class="card">
+    <div class="card-header bg-red"><span>📌 Day 2 最重要的知识点</span></div>
+    <div class="card-body">
+        <pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+
+<span class="cm"># 不用 dataclass（手写一堆样板代码）</span>
+<span class="kw">class</span> <span class="fn">Dog</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name: str, age: int = <span class="num">0</span>):
+        self.name = name
+        self.age = age
+    <span class="kw">def</span> <span class="fn">__repr__</span>(self):
+        <span class="kw">return</span> <span class="str">f"Dog(name={self.name}, age={self.age})"</span>
+    <span class="kw">def</span> <span class="fn">__eq__</span>(self, other):
+        <span class="kw">return</span> self.name == other.name <span class="kw">and</span> self.age == other.age
+
+<span class="cm"># ✅ 用 dataclass（一行搞定！）</span>
+<span class="dec">@dataclass</span>
+<span class="kw">class</span> <span class="fn">Dog</span>:
+    name: str
+    age: int = <span class="num">0</span>
+
+<span class="cm"># 自动拥有：__init__、__repr__、__eq__</span>
+dog1 = <span class="fn">Dog</span>(<span class="str">"旺财"</span>, <span class="num">3</span>)
+dog2 = <span class="fn">Dog</span>(<span class="str">"旺财"</span>, <span class="num">3</span>)
+print(dog1)          <span class="cm"># → Dog(name='旺财', age=3)</span>
+print(dog1 == dog2)  <span class="cm"># → True（自动比较）</span></pre>
+
+        <table>
+            <tr><th>@dataclass 自动生成</th><th>等价于</th></tr>
+            <tr><td><code>__init__</code></td><td>构造函数</td></tr>
+            <tr><td><code>__repr__</code></td><td>打印友好</td></tr>
+            <tr><td><code>__eq__</code></td><td>相等比较</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="item red">
+    <div class="item-title"><span>💡 高级用法：field()</span></div>
+    <div class="detail">
+        <pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field
+<span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="dec">@dataclass</span>
+<span class="kw">class</span> <span class="fn">ChatHistory</span>:
+    messages: List[str] = <span class="fn">field</span>(default_factory=list)  <span class="cm"># 可变默认值用 field</span>
+    model: str = <span class="str">"qwen"</span>
+    temperature: float = <span class="num">0.7</span>
+
+    <span class="kw">def</span> <span class="fn">add</span>(self, msg):
+        self.messages.append(msg)
+
+    <span class="kw">def</span> <span class="fn">count</span>(self):
+        <span class="kw">return</span> <span class="fn">len</span>(self.messages)</pre>
+        <p><code>field(default_factory=list)</code> 解决了"默认参数陷阱"，每次创建实例都生成新列表</p>
+    </div>
+</div>
+
+<div class="item green">
+    <div class="item-title"><span>💡 对比 Swift struct</span></div>
+    <div class="detail">
+        <table class="cmp">
+            <tr><th>Python @dataclass</th><th>Swift struct</th></tr>
+            <tr><td><code>@dataclass</code></td><td><code>struct</code></td></tr>
+            <tr><td><code>name: str</code></td><td><code>let name: String</code></td></tr>
+            <tr><td>自动 <code>__eq__</code></td><td>自动 <code>Equatable</code></td></tr>
+            <tr><td>值语义</td><td>值语义</td></tr>
+            <tr><td>可加方法</td><td>可加方法</td></tr>
+        </table>
+        <p style="margin-top:8px;"><strong>@dataclass ≈ Swift 的 struct</strong>，都是数据容器 + 自动生成样板代码</p>
+    </div>
+</div>
+</div>
+
+<!-- ============ 8. Python 没有 access control ============ -->
+<div class="section">
+<div class="section-title">⑧ Python 的"私有"约定</div>
+
+<div class="card">
+    <div class="card-header bg-orange"><span>📌 没有真正的 private</span></div>
+    <div class="card-body">
+        <pre><span class="kw">class</span> <span class="fn">Dog</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.name = <span class="str">"旺财"</span>      <span class="cm"># 公开属性</span>
+        self._age = <span class="num">3</span>          <span class="cm"># 约定私有（_ 前缀）</span>
+        self.__secret = <span class="str">"秘密"</span>  <span class="cm"># 名称改写（__ 前缀）</span>
+
+dog = <span class="fn">Dog</span>()
+print(dog.name)         <span class="cm"># → 旺财</span>
+print(dog._age)         <span class="cm"># → 3（约定不管用，依然能访问）</span>
+<span class="cm"># print(dog.__secret)  # → AttributeError</span>
+print(dog._Dog__secret) <span class="cm"># → 秘密（名称改写后仍能访问）</span></pre>
+
+        <table>
+            <tr><th>前缀</th><th>含义</th><th>是否真的私有</th></tr>
+            <tr><td>无前缀</td><td>公开</td><td>—</td></tr>
+            <tr><td><code>_xxx</code></td><td>约定私有（请勿外部访问）</td><td>❌ 不强制</td></tr>
+            <tr><td><code>__xxx</code></td><td>名称改写为 <code>_ClassName__xxx</code></td><td>⚠️ 能绕过</td></tr>
+        </table>
+
+        <div class="hl">
+            <strong>💡 记住：</strong>Python 靠<strong>约定</strong>而不是强制。看到 <code>_xxx</code> 就别在外面用，这是工程师之间的默契。
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============ 综合对比 ============ -->
+<div class="section">
+<div class="section-title">⑨ 综合对比：Python OOP vs Swift</div>
+
+<div class="card">
+    <div class="card-header bg-blue"><span>📌 完整对照表</span></div>
+    <div class="card-body">
+        <table class="cmp">
+            <tr><th>概念</th><th>Python</th><th>Swift</th></tr>
+            <tr><td>定义类</td><td><code>class Dog:</code></td><td><code>class Dog { }</code></td></tr>
+            <tr><td>构造函数</td><td><code>def __init__(self, name):</code></td><td><code>init(name: String)</code></td></tr>
+            <tr><td>实例方法</td><td><code>def bark(self):</code></td><td><code>func bark()</code></td></tr>
+            <tr><td>计算属性</td><td><code>@property</code></td><td><code>var xxx: Type { }</code></td></tr>
+            <tr><td>继承</td><td><code>class Dog(Animal):</code></td><td><code>class Dog: Animal</code></td></tr>
+            <tr><td>调用父类</td><td><code>super().__init__()</code></td><td><code>super.init()</code></td></tr>
+            <tr><td>打印友好</td><td><code>__str__</code></td><td><code>CustomStringConvertible</code></td></tr>
+            <tr><td>数据容器</td><td><code>@dataclass</code></td><td><code>struct</code></td></tr>
+            <tr><td>私有</td><td><code>_约定</code></td><td><code>private</code>（强制）</td></tr>
+            <tr><td>静态方法</td><td><code>@staticmethod</code></td><td><code>static func</code></td></tr>
+        </table>
+    </div>
+</div>
+</div>
+
+<!-- ============ 验证标准 ============ -->
+<div class="section">
+<div class="section-title">✅ 验证标准</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="verify-box" style="border-left: 4px solid #ff9800;">
+            能用 <code>@dataclass</code> 5 分钟定义一个 ChatMessage 类（role/content/timestamp 字段）
+        </div>
+
+        <div class="tip" style="margin-top:14px;">
+            <strong>💡 面试自测：</strong>
+            <ol style="margin-left:18px;margin-top:6px;">
+                <li><code>@dataclass</code> 自动生成哪三个方法？ → <strong>__init__、__repr__、__eq__</strong></li>
+                <li>Python 的 <code>self</code> 和 Swift 的 <code>self</code> 有什么区别？ → Python 必须显式写在参数里</li>
+                <li><code>@property</code> 的作用？ → 让方法像属性一样访问（等于 Swift computed property）</li>
+                <li>为什么 <code>@dataclass</code> 用 <code>field(default_factory=list)</code>？ → 避免可变默认参数陷阱</li>
+            </ol>
+        </div>
+    </div>
+</div>
+</div>
+
+</div>
+
+<div class="footer">
+    Day 2 · 任务 1+2 · Python 函数进阶 + 面向对象 · 2026.06.02
+</div>
+
+</div>
+
+</body>
+</html>

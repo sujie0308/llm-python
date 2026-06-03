@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 1 (6/1) - Python基础 + 开发环境</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; color: #1a1a2e; line-height: 1.65; background: #f0f2f5; }
+.page { max-width: 900px; margin: 0 auto; background: #fff; }
+.header { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: #fff; padding: 28px 36px; }
+.header .day-badge { display: inline-block; background: #e94560; padding: 4px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; margin-bottom: 10px; }
+.header h1 { font-size: 26px; margin-bottom: 4px; }
+.header .subtitle { opacity: 0.75; font-size: 14px; }
+.header .meta { display: flex; gap: 24px; margin-top: 12px; font-size: 13px; opacity: 0.85; flex-wrap: wrap; }
+.content { padding: 28px 36px; }
+.phase { border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 22px; overflow: hidden; }
+.phase-header { padding: 12px 18px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+.phase-day { background: #e3f2fd; color: #0d47a1; }
+.phase-night { background: #ede7f6; color: #4a148c; }
+.phase-body { padding: 16px 18px; }
+.task { border-left: 4px solid #ddd; padding: 12px 16px; margin-bottom: 14px; background: #fafafa; border-radius: 0 8px 8px 0; }
+.task.learn { border-left-color: #2196f3; }
+.task.practice { border-left-color: #4caf50; }
+.task.verify { border-left-color: #ff9800; }
+.task-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.task-title .icon { font-size: 16px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.tag-learn { background: #e3f2fd; color: #1565c0; }
+.tag-practice { background: #e8f5e9; color: #2e7d32; }
+.tag-verify { background: #fff3e0; color: #ef6c00; }
+.tag-time { background: #f3e5f5; color: #7b1fa2; }
+.tag-tool { background: #eceff1; color: #546e7a; }
+.task-detail { font-size: 13px; color: #444; margin-top: 6px; }
+.task-detail p { margin: 3px 0; }
+.task-detail a { color: #1565c0; text-decoration: none; border-bottom: 1px dashed #1565c0; }
+.task-detail a:hover { color: #0d47a1; border-bottom-style: solid; }
+.task-detail code { background: #f5f5f5; padding: 1px 6px; border-radius: 3px; font-family: "Cascadia Code", "Fira Code", monospace; font-size: 12px; color: #c62828; }
+.purpose { background: #e8eaf6; border-radius: 6px; padding: 8px 12px; margin-top: 6px; font-size: 13px; }
+.purpose::before { content: "🎯 目的："; font-weight: 700; }
+.verify-box { background: #fff8e1; border-radius: 6px; padding: 8px 12px; margin-top: 6px; font-size: 13px; }
+.verify-box::before { content: "✅ 验证标准："; font-weight: 700; }
+.tip { background: linear-gradient(135deg, #fffde7, #fff9c4); border-left: 4px solid #fbc02d; padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 14px 0; font-size: 13px; }
+.checklist { margin-top: 14px; }
+.checklist h3 { font-size: 15px; color: #0d47a1; margin-bottom: 8px; }
+.check-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #e0e0e0; font-size: 13px; }
+.check-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4caf50; }
+.notes { margin-top: 18px; }
+.notes textarea { width: 100%; min-height: 80px; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; font-size: 13px; font-family: inherit; resize: vertical; }
+.print-bar { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; gap: 8px; }
+.print-bar a, .print-bar button { padding: 10px 18px; border: none; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.15); text-decoration: none; }
+.btn-print { background: #0d47a1; color: #fff; }
+.btn-print:hover { background: #1565c0; }
+.btn-nav { background: #fff; color: #333; }
+table.cmp { width: 100%; font-size: 12px; margin-top: 6px; border-collapse: collapse; }
+table.cmp th { background: #e3f2fd; padding: 6px; text-align: left; }
+table.cmp td { padding: 5px; border-bottom: 1px solid #eee; }
+pre { background: #1e1e2e; color: #cdd6f4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; margin-top: 6px; font-family: "Cascadia Code", monospace; }
+@media print {
+    body { background: #fff; }
+    .page { box-shadow: none; }
+    .print-bar { display: none; }
+    .phase, .task { break-inside: avoid; }
+    a { color: #1565c0 !important; text-decoration: underline !important; }
+    a::after { content: " (" attr(href) ")"; font-size: 10px; color: #666; }
+}
+</style>
+</head>
+<body>
+
+<div class="print-bar">
+    <a class="btn-nav" href="AI学习计划_总览.html">📋 总览</a>
+    <button class="btn-print" onclick="window.print()">🖨 打印</button>
+    <a class="btn-nav" href="AI学习计划_Day2.html">下一天 ▶</a>
+</div>
+
+<div class="page">
+
+<div class="header">
+    <div class="day-badge">DAY 1 / 180</div>
+    <h1>Python 基础语法 + 开发环境搭建</h1>
+    <div class="subtitle">第 1 周 · Python 速成 · 全栈大模型工程师之路启航</div>
+    <div class="meta">
+        <span>📅 2026年6月1日 周一</span>
+        <span>⏱ 白天 3h + 晚上 3h = 6h</span>
+        <span>🖥 RTX 5080 16G · 32G RAM · 9950X3D</span>
+        <span>🛠 Trae / IntelliJ IDEA</span>
+    </div>
+</div>
+
+<div class="content">
+
+<div class="phase">
+    <div class="phase-header phase-day"><span>☀️ 白天（公司 3 小时）— 理论学习 + 概念理解</span><span>09:00 - 12:00</span></div>
+    <div class="phase-body">
+
+        <div class="task learn">
+            <div class="task-title"><span class="icon">📖</span>任务 1：Miniconda 安装与环境管理理论<span class="tag tag-learn">学习</span><span class="tag tag-time">45 分钟</span><span class="tag tag-tool">Trae</span></div>
+            <div class="task-detail">
+                <p><strong>学习资料：</strong></p>
+                <p>📚 <a href="https://docs.conda.io/projects/miniconda/en/latest/" target="_blank">Miniconda 官方文档</a></p>
+                <p>📚 <a href="https://docs.conda.io/projects/conda/en/stable/user-guide/concepts/environments.html" target="_blank">Conda 环境概念</a></p>
+                <p>📺 <a href="https://www.bilibili.com/video/BV1KW411a7DT" target="_blank">B站：Conda 虚拟环境完整教程</a></p>
+                <p><strong>核心理解：</strong></p>
+                <p>• 为什么需要虚拟环境（Swift 项目用 SPM 隔离依赖，Python 需要 Conda）</p>
+                <p>• Conda vs venv vs pip 区别</p>
+                <p>• 环境激活、切换、删除</p>
+                <div class="purpose">理解虚拟环境隔离的必要性，避免不同 AI 项目的 PyTorch 版本冲突。</div>
+                <div class="verify-box">能口头解释为什么 LLM 学习要用独立的 conda 环境，以及 conda 和 pip 的关系。</div>
+            </div>
+        </div>
+
+        <div class="task learn">
+            <div class="task-title"><span class="icon">📖</span>任务 2：Python 基础语法（对比 Swift）<span class="tag tag-learn">学习</span><span class="tag tag-time">90 分钟</span><span class="tag tag-tool">Trae</span></div>
+            <div class="task-detail">
+                <p><strong>学习资料（按顺序看）：</strong></p>
+                <p>📚 <a href="https://docs.python.org/zh-cn/3/tutorial/introduction.html" target="_blank">Python 官方教程 第 3 章 - 简介</a>（30 分钟精读）</p>
+                <p>� <a href="https://docs.python.org/zh-cn/3/tutorial/controlflow.html" target="_blank">Python 官方教程 第 4 章 - 控制流</a>（30 分钟）</p>
+                <p>📚 <a href="https://docs.python.org/zh-cn/3/tutorial/datastructures.html" target="_blank">Python 官方教程 第 5 章 - 数据结构</a>（30 分钟）</p>
+                <p><strong>重点对比表（必记！）：</strong></p>
+                <table class="cmp">
+                    <tr><th>概念</th><th>Swift</th><th>Python</th></tr>
+                    <tr><td>变量声明</td><td><code>let x = 1</code> / <code>var x = 1</code></td><td><code>x = 1</code></td></tr>
+                    <tr><td>类型标注</td><td><code>x: Int = 1</code></td><td><code>x: int = 1</code>（可选）</td></tr>
+                    <tr><td>函数</td><td><code>func foo() -&gt; Int</code></td><td><code>def foo() -&gt; int</code></td></tr>
+                    <tr><td>列表</td><td><code>[1, 2, 3]</code> (Array)</td><td><code>[1, 2, 3]</code> (list)</td></tr>
+                    <tr><td>字典</td><td><code>["a": 1]</code></td><td><code>{"a": 1}</code></td></tr>
+                    <tr><td>条件</td><td><code>if x &gt; 0 { }</code></td><td><code>if x &gt; 0:</code></td></tr>
+                    <tr><td>循环</td><td><code>for i in 0..&lt;10</code></td><td><code>for i in range(10):</code></td></tr>
+                    <tr><td>可选值</td><td><code>var x: Int? = nil</code></td><td><code>x = None</code></td></tr>
+                    <tr><td>字符串插值</td><td><code>"hello \(name)"</code></td><td><code>f"hello {name}"</code></td></tr>
+                    <tr><td>枚举</td><td><code>enum E { case a, b }</code></td><td><code>class E(Enum): A=1</code></td></tr>
+                </table>
+                <p style="margin-top:8px;"><strong>核心差异（必须记住）：</strong></p>
+                <p>• Python 用<strong>缩进</strong>代替大括号 → 缩进错误 = 语法错误</p>
+                <p>• Python 没有 <code>let/var</code>，所有变量都可重新赋值</p>
+                <p>• Python 的 <code>None</code> ≈ Swift 的 <code>nil</code>，但用法不同（不需要解包）</p>
+                <p>• Python 列表推导式：<code>[x*2 for x in range(10) if x &gt; 5]</code></p>
+                <p>• Python 没有 <code>switch</code>，3.10+ 用 <code>match/case</code></p>
+                <div class="purpose">利用 Swift 的扎实基础，快速建立 Python 心智模型，2 小时达到他人 2 周的水平。</div>
+                <div class="verify-box">合上文档，能默写出 5 个 Swift vs Python 关键差异；能徒手写出列表推导式语法。</div>
+            </div>
+        </div>
+
+        <div class="task learn">
+            <div class="task-title"><span class="icon">📖</span>任务 3：Trae IDE 熟悉 + Python 插件配置<span class="tag tag-learn">学习</span><span class="tag tag-time">45 分钟</span><span class="tag tag-tool">Trae</span></div>
+            <div class="task-detail">
+                <p><strong>学习资料：</strong></p>
+                <p>📚 <a href="https://docs.trae.ai/" target="_blank">Trae 官方文档</a></p>
+                <p>📚 <a href="https://docs.trae.ai/ide/getting-started" target="_blank">Trae Getting Started</a></p>
+                <p><strong>必装插件（Trae 内置市场）：</strong></p>
+                <p>• Python（官方）</p>
+                <p>• Pylance（类型检查）</p>
+                <p>• Jupyter</p>
+                <p>• GitLens</p>
+                <p>• Black Formatter（代码格式化）</p>
+                <p>• Ruff（高速 linter）</p>
+                <p><strong>快捷键熟悉（与 IDEA 对比）：</strong></p>
+                <p>• 运行：F5</p>
+                <p>• 注释：Ctrl+/</p>
+                <p>• 重命名：F2</p>
+                <p>• AI 对话：直接呼出 Trae AI 助手</p>
+                <div class="purpose">把 Trae 用熟，AI 时代的 IDE = 你的第二大脑。</div>
+                <div class="verify-box">能熟练用 Trae 创建 Python 文件、运行、用 AI 助手提问。</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="phase">
+    <div class="phase-header phase-night"><span>🌙 晚上（家里 3 小时）— 动手实战 + GPU 环境</span><span>19:00 - 22:00</span></div>
+    <div class="phase-body">
+
+        <div class="task practice">
+            <div class="task-title"><span class="icon">💻</span>任务 4：Miniconda 实装 + 创建 llm 环境<span class="tag tag-practice">实战</span><span class="tag tag-time">30 分钟</span><span class="tag tag-tool">Trae</span></div>
+            <div class="task-detail">
+                <p><strong>操作步骤：</strong></p>
+                <p>1. 下载 <a href="https://docs.conda.io/en/latest/miniconda.html" target="_blank">Miniconda Windows 64-bit</a></p>
+                <p>2. 安装时勾选 "Add Miniconda3 to my PATH"</p>
+                <p>3. 打开 PowerShell：</p>
+                <pre>conda --version
+conda create -n llm python=3.11 -y
+conda activate llm
+python --version</pre>
+                <p>4. 在 Trae 中：<code>Ctrl+Shift+P</code> → "Python: Select Interpreter" → 选 <code>llm</code> 环境</p>
+                <div class="verify-box">Trae 右下角显示 <code>Python 3.11.x ('llm')</code>，终端运行 <code>python --version</code> 输出 3.11.x</div>
+            </div>
+        </div>
+
+        <div class="task practice">
+            <div class="task-title"><span class="icon">💻</span>任务 5：安装 PyTorch + 验证 RTX 5080<span class="tag tag-practice">实战</span><span class="tag tag-time">45 分钟</span><span class="tag tag-tool">Trae</span></div>
+            <div class="task-detail">
+                <p><strong>关键操作：</strong></p>
+                <p>1. 检查显卡驱动：</p>
+                <pre>nvidia-smi</pre>
+                <p>应该看到 RTX 5080 + 驱动版本 + CUDA 版本（≥12.4）</p>
+                <p>2. 访问 <a href="https://pytorch.org/get-started/locally/" target="_blank">PyTorch 安装页</a>，选择：</p>
+                <p>&nbsp;&nbsp;Stable / Windows / Pip / Python / CUDA 12.4</p>
+                <p>3. 在 <code>llm</code> 环境中安装：</p>
+                <pre>pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124</pre>
+                <p>（首次下载约 3-5GB，耐心等待）</p>
+                <p>4. 验证 GPU 可用：</p>
+                <pre>python -c "import torch; print('CUDA:', torch.cuda.is_available()); print('Device:', torch.cuda.get_device_name(0)); print('VRAM:', torch.cuda.get_device_properties(0).total_memory / 1e9, 'GB')"</pre>
+                <p>5. 安装基础库：</p>
+                <pre>pip install openai transformers datasets numpy pandas python-dotenv</pre>
+                <div class="purpose">让你的 RTX 5080 16G 显卡能被 PyTorch 调用。该卡可支持：<br>• QLoRA 微调 7B-14B 模型 ✅<br>• LoRA 微调 7B 模型 ✅<br>• 推理 14B 量化模型 ✅<br>• 推理 32B 4-bit 量化 ⚠️ 边界</div>
+                <div class="verify-box">输出 <code>CUDA: True</code> 和 <code>Device: NVIDIA GeForce RTX 5080</code> 和 <code>VRAM: 16.0 GB</code></div>
+            </div>
+        </div>
+
+        <div class="task practice">
+            <div class="task-title"><span class="icon">💻</span>任务 6：第一个 Python 程序（城市温度筛选）<span class="tag tag-practice">实战</span><span class="tag tag-time">45 分钟</span><span class="tag tag-tool">Trae</span></div>
+            <div class="task-detail">
+                <p><strong>编程任务：</strong></p>
+                <p>在 Trae 创建项目 <code>llm-learning-journey</code>，新建 <code>day1/day1_basics.py</code>：</p>
+<pre># day1_basics.py
+# 1. 定义字典存5个城市温度
+cities = {
+    "北京": 28, "上海": 25, "深圳": 32,
+    "成都": 19, "哈尔滨": 12
+}
+
+# 2. 列表推导式筛选温度 > 20°C
+hot_cities = [(city, temp) for city, temp in cities.items() if temp > 20]
+
+# 3. f-string 格式化输出
+print(f"温度高于20°C的城市共 {len(hot_cities)} 个：")
+for city, temp in hot_cities:
+    print(f"  {city}: {temp}°C")
+
+# 4. 进阶：用 sorted 按温度降序
+hot_cities_sorted = sorted(hot_cities, key=lambda x: x[1], reverse=True)
+print("\n按温度降序排列：")
+for city, temp in hot_cities_sorted:
+    print(f"  {city}: {temp}°C  {'🔥' * (temp // 10)}")</pre>
+                <p>运行：在 Trae 中按 F5 或终端 <code>python day1/day1_basics.py</code></p>
+                <div class="purpose">第一个完整 Python 程序，巩固字典、列表推导式、f-string、Lambda、排序 5 个核心知识点。</div>
+                <div class="verify-box">能看到输出 4 个城市（北京/上海/深圳/成都），且按温度降序排列。</div>
+            </div>
+        </div>
+
+        <div class="task practice">
+            <div class="task-title"><span class="icon">💻</span>任务 7：第一次调用大模型 API<span class="tag tag-practice">实战</span><span class="tag tag-time">45 分钟</span><span class="tag tag-tool">Trae</span></div>
+            <div class="task-detail">
+                <p><strong>操作步骤：</strong></p>
+                <p>1. 创建 <code>day1/.env</code> 文件（注意加到 <code>.gitignore</code>）：</p>
+<pre>API_KEY=sk-your-key-here
+API_BASE=https://your-api-endpoint
+MODEL=your-model-name</pre>
+                <p>2. 创建 <code>day1/.gitignore</code>：</p>
+<pre>.env
+__pycache__/
+*.pyc
+.venv/</pre>
+                <p>3. 创建 <code>day1/day1_first_api.py</code>：</p>
+<pre>import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+client = OpenAI(
+    api_key=os.getenv("API_KEY"),
+    base_url=os.getenv("API_BASE")
+)
+
+# 同步调用
+response = client.chat.completions.create(
+    model=os.getenv("MODEL"),
+    messages=[
+        {"role": "system", "content": "你是一个有帮助的AI助手。"},
+        {"role": "user", "content": "用一句话介绍什么是大语言模型。"}
+    ],
+)
+print("【同步输出】", response.choices[0].message.content)
+print("\n" + "=" * 50 + "\n")
+
+# 流式调用
+print("【流式输出】", end="")
+stream = client.chat.completions.create(
+    model=os.getenv("MODEL"),
+    messages=[
+        {"role": "user", "content": "用 3 个要点介绍 Transformer 架构。"}
+    ],
+    stream=True
+)
+for chunk in stream:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print()</pre>
+                <p>4. 运行并观察流式效果</p>
+                <p>5. 实验：修改 system prompt，让 AI 扮演不同角色（程序员、老师、诗人）</p>
+                <p><strong>参考资料：</strong></p>
+                <p>📚 <a href="https://platform.openai.com/docs/api-reference/chat" target="_blank">OpenAI Chat API 文档</a>（所有兼容 OpenAI 格式的 API 都看这个）</p>
+                <p>📚 <a href="https://github.com/openai/openai-python" target="_blank">OpenAI Python SDK GitHub</a></p>
+                <div class="purpose">破除对 AI 的神秘感。后续 6 个月所有项目都建立在这个简单调用之上。</div>
+                <div class="verify-box">同步输出 + 流式打字效果都正常显示，且改 system prompt 后 AI 表现出对应人格。</div>
+            </div>
+        </div>
+
+        <div class="task verify">
+            <div class="task-title"><span class="icon">✅</span>任务 8：GitHub 初始化 + Day1 复盘<span class="tag tag-verify">复盘</span><span class="tag tag-time">15 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>操作步骤：</strong></p>
+                <p>1. 在 <a href="https://github.com/new" target="_blank">GitHub 新建仓库</a>：<code>llm-learning-journey</code>（Public）</p>
+                <p>2. 写 <code>README.md</code>：</p>
+<pre># LLM Learning Journey
+
+## 目标
+6 个月（2026/6/1 - 2026/11/27）完成大模型全栈学习，
+从 iOS 工程师转型为 AI 大模型工程师。
+
+## 硬件
+- CPU: AMD Ryzen 9 9950X3D
+- RAM: 32GB
+- GPU: NVIDIA RTX 5080 16GB
+
+## 进度
+- [x] Day 1: Python基础 + 环境搭建
+- [ ] Day 2: 函数 + OOP
+- ...</pre>
+                <p>3. 推送代码：</p>
+<pre>cd llm-learning-journey
+git init
+git branch -M main
+git add .
+git commit -m "Day 1: Python basics + first API call"
+git remote add origin https://github.com/你的用户名/llm-learning-journey.git
+git push -u origin main</pre>
+                <p>4. 在 GitHub 仓库主页确认能看到所有文件</p>
+                <div class="purpose">从 Day 1 开始积累 commit history，180 天后这就是最有力的简历。</div>
+                <div class="verify-box">GitHub 仓库可访问，包含 README + day1/ 目录下所有文件。</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="checklist">
+    <h3>📋 Day 1 完成检查清单</h3>
+    <div class="check-item"><input type="checkbox" id="c1"><label for="c1">Miniconda 安装成功，<code>llm</code> 环境可激活</label></div>
+    <div class="check-item"><input type="checkbox" id="c2"><label for="c2">Trae 中 Python 解释器配置为 <code>llm</code> 环境</label></div>
+    <div class="check-item"><input type="checkbox" id="c3"><label for="c3">PyTorch + CUDA 安装成功，RTX 5080 被识别（16GB VRAM）</label></div>
+    <div class="check-item"><input type="checkbox" id="c4"><label for="c4"><code>day1_basics.py</code> 运行成功（城市温度筛选 + 排序）</label></div>
+    <div class="check-item"><input type="checkbox" id="c5"><label for="c5"><code>day1_first_api.py</code> 运行成功，同步 + 流式输出都正常</label></div>
+    <div class="check-item"><input type="checkbox" id="c6"><label for="c6">GitHub 仓库 <code>llm-learning-journey</code> 创建并推送</label></div>
+    <div class="check-item"><input type="checkbox" id="c7"><label for="c7">能徒手默写 Python vs Swift 的 5 个核心差异</label></div>
+    <div class="check-item"><input type="checkbox" id="c8"><label for="c8">学习笔记记录 3 条收获 + 1 条疑问</label></div>
+</div>
+
+<div class="notes">
+    <h3>📝 今日学习笔记</h3>
+    <textarea placeholder="收获 1：&#10;收获 2：&#10;收获 3：&#10;疑问：&#10;明天要重点：">
+</textarea>
+</div>
+
+<div class="tip">
+    <strong>📌 明天（Day 2）预告：</strong>Python 函数进阶（*args/**kwargs/Lambda/闭包）+ 面向对象（dataclass/继承/@property）+ 封装第一个 LLMClient 类（同步版）+ pytest 单元测试入门。
+</div>
+
+<div style="margin-top:18px;padding:14px;background:#f5f5f5;border-radius:8px;font-size:12px;color:#666;">
+    <strong>🖥 你的硬件备忘</strong><br>
+    CPU: AMD Ryzen 9 9950X3D（16核32线程，AI 数据预处理飞快）<br>
+    RAM: 32GB（建议升 64GB，未来跑大数据集会爆）<br>
+    GPU: NVIDIA RTX 5080 16GB VRAM（最适合个人学习的甜点卡）<br>
+    可微调规模：QLoRA 7B ✅ · LoRA 7B ✅ · 推理 14B(量化) ✅ · LoRA 14B ⚠️ · 70B ❌(需多卡)<br>
+    IDE: Trae（AI 编程）/ IntelliJ IDEA（Java/Web）<br>
+    API: 你已有最新模型 API ✅
+</div>
+
+</div>
+</div>
+
+</body>
+</html>
