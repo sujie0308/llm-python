@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 3 - 异步编程 + 类型标注 + 装饰器</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #1a1a2e; line-height: 1.7; }
+.page { max-width: 920px; margin: 0 auto; background: #fff; }
+.header { background: linear-gradient(135deg, #1b4332, #2d6a4f, #40916c); color: #fff; padding: 28px 36px; }
+.header .badge { display: inline-block; background: #e94560; padding: 4px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; margin-bottom: 10px; }
+.header h1 { font-size: 24px; margin-bottom: 4px; }
+.header .sub { opacity: 0.75; font-size: 14px; margin-top: 4px; }
+.content { padding: 28px 36px; }
+.section { margin-bottom: 32px; }
+.section-title { font-size: 18px; font-weight: 700; color: #1b4332; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; border-left: 4px solid #1b4332; padding-left: 12px; }
+.card { border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+.card-header { padding: 12px 18px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+.card-body { padding: 16px 18px; }
+.bg-green { background: #d8f3dc; color: #1b4332; }
+.bg-blue { background: #e3f2fd; color: #0d47a1; }
+.bg-purple { background: #ede7f6; color: #4a148c; }
+.bg-orange { background: #fff3e0; color: #ef6c00; }
+.bg-red { background: #fce4ec; color: #c62828; }
+.item { padding: 14px 16px; margin-bottom: 12px; background: #fafafa; border-radius: 8px; border-left: 4px solid #ddd; }
+.item.green { border-left-color: #2d6a4f; }
+.item.blue { border-left-color: #2196f3; }
+.item.purple { border-left-color: #7b1fa2; }
+.item.orange { border-left-color: #ff9800; }
+.item.red { border-left-color: #e53935; }
+.item-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.tag-green { background: #d8f3dc; color: #1b4332; }
+.tag-blue { background: #e3f2fd; color: #1565c0; }
+.tag-purple { background: #f3e5f5; color: #7b1fa2; }
+.tag-orange { background: #fff3e0; color: #ef6c00; }
+.tag-red { background: #fce4ec; color: #c62828; }
+.detail { font-size: 13px; color: #444; }
+.detail p { margin: 5px 0; }
+.detail code { background: #f5f5f5; padding: 1px 6px; border-radius: 3px; font-family: "Cascadia Code", "Fira Code", monospace; font-size: 12px; color: #c62828; }
+pre { background: #1e1e2e; color: #cdd6f4; padding: 14px 18px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 10px 0; font-family: "Cascadia Code", "Fira Code", monospace; line-height: 1.6; }
+pre .cm { color: #6c7086; }
+pre .kw { color: #cba6f7; }
+pre .fn { color: #89b4fa; }
+pre .str { color: #a6e3a1; }
+pre .num { color: #fab387; }
+pre .op { color: #89dceb; }
+pre .dec { color: #f38ba8; }
+table { width: 100%; font-size: 13px; border-collapse: collapse; margin: 10px 0; }
+table th { background: #e3f2fd; padding: 8px 12px; text-align: left; font-weight: 600; color: #0d47a1; }
+table td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+table tr:hover td { background: #f8fafc; }
+table.cmp th { background: #1e1e2e; color: #cdd6f4; }
+table.cmp td { font-family: "Cascadia Code", monospace; font-size: 12px; }
+.hl { background: #fffde7; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #fbc02d; margin: 10px 0; font-size: 13px; }
+.hl-red { background: #fce4ec; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #e53935; margin: 10px 0; font-size: 13px; }
+.goal-box { background: #e8eaf6; border-radius: 8px; padding: 12px 16px; margin-top: 14px; font-size: 13px; }
+.goal-box::before { content: "🎯 目的："; font-weight: 700; }
+.verify-box { background: #fff8e1; border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 13px; }
+.verify-box::before { content: "✅ 验证标准："; font-weight: 700; color: #ef6c00; }
+.tip { background: linear-gradient(135deg, #d8f3dc, #b7e4c7); padding: 12px 16px; border-radius: 8px; margin: 14px 0; font-size: 13px; border-left: 4px solid #2d6a4f; }
+.footer { text-align: center; padding: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 13px; }
+@media (max-width: 600px) {
+    .header { padding: 24px 20px; }
+    .header h1 { font-size: 20px; }
+    .content { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+<div class="header">
+    <div class="badge">DAY 3 · 任务 1-3</div>
+    <h1>异步编程 + 类型标注 + 装饰器</h1>
+    <div class="sub">async/await · Type Hints · Decorator · Swift 对比详解</div>
+</div>
+
+<div class="content">
+
+<div class="hl" style="margin-bottom:20px;">
+    <strong>📌 为什么重要？</strong> 大模型 API 调用是 IO 密集任务，异步可快 5-20 倍；类型标注让 Python 拥有 Swift 般的类型安全；装饰器是 FastAPI/LangChain 的核心机制。
+</div>
+
+
+<!-- ================================================================ -->
+<!-- 任务 1：异步编程 async/await -->
+<!-- ================================================================ -->
+
+<div class="section">
+<div class="section-title" style="font-size:22px;color:#2d6a4f;border-left-color:#2d6a4f;">📖 任务 1：异步编程 async/await</div>
+
+<!-- 1.1 同步 vs 异步 -->
+<div class="section-title">① 同步 vs 异步 — 本质区别</div>
+
+<div class="card">
+    <div class="card-header bg-green"><span>📌 阻塞 vs 不阻塞</span></div>
+    <div class="card-body">
+        <table class="cmp">
+            <tr><th>概念</th><th>同步</th><th>异步</th></tr>
+            <tr><td>行为</td><td>做完一件再做下一件，等待时全程阻塞</td><td>在等待时切换去做其他任务，不阻塞</td></tr>
+            <tr><td>生活类比</td><td>去银行柜台排队，一直站窗口前等到办完</td><td>取号后去旁边坐着，叫到号再过去</td></tr>
+            <tr><td>LLM 调用</td><td>10 个请求 → 10 * 3s = 30s</td><td>10 个请求并发 → ≈ 3s</td></tr>
+        </table>
+
+        <pre><span class="cm"># 同步：一个个来</span>
+resp1 = client.chat(...)  <span class="cm"># 等 3 秒</span>
+resp2 = client.chat(...)  <span class="cm"># 再等 3 秒</span>
+resp3 = client.chat(...)  <span class="cm"># 再等 3 秒</span>
+<span class="cm"># 总耗时 ≈ 9 秒</span>
+
+<span class="cm"># 异步：一起发，一起等</span>
+task1 = asyncio.create_task(chat(...))  <span class="cm"># 立即开始</span>
+task2 = asyncio.create_task(chat(...))  <span class="cm"># 立即开始</span>
+task3 = asyncio.create_task(chat(...))  <span class="cm"># 立即开始</span>
+results = await asyncio.gather(task1, task2, task3)
+<span class="cm"># 总耗时 ≈ 3 秒（最慢的那个）</span></pre>
+    </div>
+</div>
+
+<div class="item green">
+    <div class="item-title"><span>💡 Swift vs Python 异步概念对照</span></div>
+    <div class="detail">
+        <table class="cmp">
+            <tr><th>概念</th><th>Swift</th><th>Python</th></tr>
+            <tr><td>定义异步函数</td><td><code>func fetch() async -> String</code></td><td><code>async def fetch() -> str</code></td></tr>
+            <tr><td>等待结果</td><td><code>let r = try await fetch()</code></td><td><code>r = await fetch()</code></td></tr>
+            <tr><td>入口</td><td><code>Task { ... }</code></td><td><code>asyncio.run(...)</code></td></tr>
+            <tr><td>并发</td><td><code>async let a = f1(); async let b = f2()</code></td><td><code>asyncio.gather(f1(), f2())</code></td></tr>
+            <tr><td>后台任务</td><td><code>Task.detached { ... }</code></td><td><code>asyncio.create_task(...)</code></td></tr>
+            <tr><td>异步序列</td><td><code>for try await item in stream</code></td><td><code>async for item in stream</code></td></tr>
+            <tr><td>取消</td><td><code>task.cancel()</code></td><td><code>task.cancel()</code></td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- 1.2 事件循环 -->
+<div class="section-title">② 事件循环 (Event Loop)</div>
+
+<div class="card">
+    <div class="card-header bg-green"><span>📌 Python 异步的核心引擎</span></div>
+    <div class="card-body">
+        <p><strong>事件循环</strong> 是一个无限循环，不断检查有哪些协程可以继续执行。它运行在<strong>单线程</strong>上，靠"调度"而不是多线程实现并发。</p>
+
+        <pre><span class="cm"># 事件循环的简化理解</span>
+tasks = [task1, task2, task3]  <span class="cm"># 要执行的协程列表</span>
+
+<span class="kw">while True</span>:                    <span class="cm"># 事件循环</span>
+    <span class="kw">for</span> task <span class="kw">in</span> tasks:
+        <span class="kw">if</span> task.is_ready():       <span class="cm"># 可以继续了吗？</span>
+            task.run_one_step()    <span class="cm"># 执行一步，直到遇到下一个 await</span>
+        <span class="cm"># 如果还没准备好（还在等 IO），跳过它，检查下一个</span></pre>
+
+        <table>
+            <tr><th>特性</th><th>事件循环</th><th>多线程</th></tr>
+            <tr><td>运行位置</td><td>单线程</td><td>多线程</td></tr>
+            <tr><td>切换成本</td><td>极低（用户态，~0.01μs）</td><td>高（内核态，~1μs）</td></tr>
+            <tr><td>内存开销</td><td>每个协程 ~几 KB</td><td>每个线程 ~8MB</td></tr>
+            <tr><td>适合场景</td><td>IO 密集（网络、数据库）</td><td>CPU 密集（计算、渲染）</td></tr>
+        </table>
+
+        <div class="hl">
+            <strong>💡 类比：</strong>事件循环就像餐厅的一个服务员（单线程），可以为多桌客人服务——客人点菜后（发请求），服务员去服务其他桌（切换任务），菜好了再回来（await 完成）。
+        </div>
+    </div>
+</div>
+
+<div class="item blue">
+    <div class="item-title"><span>💡 Swift 对比：EventLoop 和 Actor</span></div>
+    <div class="detail">
+        <p>Python 的事件循环 ≈ Swift Concurrency 中的 <strong>Executor</strong>（全局调度器）。</p>
+        <p>区别：Python 的 asyncio 需要手动管理事件循环（<code>asyncio.run()</code>），Swift 的 async/await 是<strong>语言内置</strong>的，编译器自动处理调度。</p>
+    </div>
+</div>
+
+<!-- 1.3 async def / await -->
+<div class="section-title">③ async def / await — 定义和等待协程</div>
+
+<div class="card">
+    <div class="card-header bg-green"><span>📌 协程的"定义"和"等待"</span></div>
+    <div class="card-body">
+        <pre><span class="cm"># async def：定义一个协程函数（调用后不会立即执行）</span>
+<span class="kw">async def</span> <span class="fn">fetch_data</span>():
+    <span class="kw">return</span> <span class="str">"数据"</span>
+
+coro = <span class="fn">fetch_data</span>()         <span class="cm"># ⚠️ 还没有执行！返回一个协程对象</span>
+
+<span class="cm"># await：等待协程完成（不阻塞线程）</span>
+<span class="kw">async def</span> <span class="fn">main</span>():
+    result = <span class="kw">await</span> <span class="fn">fetch_data</span>()  <span class="cm"># 暂停 main，等 fetch_data 完成</span>
+    print(result)                 <span class="cm"># → "数据"</span>
+
+<span class="fn">asyncio.run(main())</span>              <span class="cm"># 启动事件循环的入口</span></pre>
+
+        <table>
+            <tr><th>关键字</th><th>作用</th><th>类比 Swift</th></tr>
+            <tr><td><code>async def</code></td><td>定义协程 = 定义"可暂停"的函数</td><td><code>func ... async</code></td></tr>
+            <tr><td><code>await</code></td><td>等待协程完成，同时让出控制权</td><td><code>try await</code></td></tr>
+            <tr><td><code>asyncio.run()</code></td><td>启动事件循环的入口</td><td><code>Task { ... }</code></td></tr>
+        </table>
+
+        <div class="hl-red">
+            <strong>⚠️ 规则：</strong><code>await</code> 只能用在 <code>async def</code> 内部。普通函数里写 <code>await</code> → SyntaxError。
+        </div>
+    </div>
+</div>
+
+<!-- 1.4 gather / create_task -->
+<div class="section-title">④ asyncio.gather() — 并发执行多个协程</div>
+
+<div class="card">
+    <div class="card-header bg-green"><span>📌 并发执行，等所有完成，返回结果列表</span></div>
+    <div class="card-body">
+        <pre><span class="kw">async def</span> <span class="fn">fetch</span>(id: int) -> str:
+    <span class="kw">await</span> <span class="fn">asyncio.sleep</span>(<span class="num">1</span>)  <span class="cm"># 模拟 API 调用</span>
+    <span class="kw">return</span> <span class="str">f"数据 {id}"</span>
+
+<span class="kw">async def</span> <span class="fn">main</span>():
+    <span class="cm"># 串行：3 个请求要 3 秒</span>
+    <span class="cm"># r1 = await fetch(1)  r2 = await fetch(2)  r3 = await fetch(3)</span>
+
+    <span class="cm"># 并发：3 个请求只要 1 秒</span>
+    results = <span class="kw">await</span> <span class="fn">asyncio.gather</span>(
+        <span class="fn">fetch</span>(<span class="num">1</span>),
+        <span class="fn">fetch</span>(<span class="num">2</span>),
+        <span class="fn">fetch</span>(<span class="num">3</span>),
+    )
+    print(results)  <span class="cm"># → ['数据 1', '数据 2', '数据 3']</span>
+
+<span class="fn">asyncio.run(main())</span></pre>
+
+        <table>
+            <tr><th>方法</th><th>作用</th><th>Swift 对应</th></tr>
+            <tr><td><code>asyncio.gather(c1, c2, ...)</code></td><td>并发执行，等所有完成，返回结果列表</td><td><code>async let a = f1(); async let b = f2()</code></td></tr>
+            <tr><td><code>asyncio.create_task(coro)</code></td><td>把协程丢到后台立即执行，返回 Task 对象</td><td><code>Task { ... }</code></td></tr>
+        </table>
+
+        <div class="item green">
+            <div class="item-title"><span>💡 LLM 并发调用：核心代码</span></div>
+            <div class="detail">
+                <pre><span class="kw">async def</span> <span class="fn">call_llm</span>(client, prompt):
+    resp = <span class="kw">await</span> client.chat.completions.create(
+        model=..., messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: prompt}]
+    )
+    <span class="kw">return</span> resp.choices[<span class="num">0</span>].message.content
+
+<span class="cm"># 10 个请求同时发出</span>
+results = <span class="kw">await</span> <span class="fn">asyncio.gather</span>(
+    *[<span class="fn">call_llm</span>(client, p) <span class="kw">for</span> p <span class="kw">in</span> PROMPTS]
+)</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 1.5 async with / async for -->
+<div class="section-title">⑤ async with / async for — 异步上下文和迭代</div>
+
+<div class="card">
+    <div class="card-header bg-green"><span>📌 同步 → 异步 = 前面加 async</span></div>
+    <div class="card-body">
+        <table class="cmp">
+            <tr><th>同步</th><th>异步</th><th>用途</th></tr>
+            <tr><td><code>with open("f.txt") as f:</code></td><td><code>async with AsyncClient() as c:</code></td><td>异步资源管理（HTTP 客户端、DB 连接）</td></tr>
+            <tr><td><code>for item in stream:</code></td><td><code>async for item in stream:</code></td><td>异步迭代（流式读取）</td></tr>
+        </table>
+
+        <pre><span class="cm"># async with — 异步上下文管理器</span>
+<span class="kw">async with</span> httpx.AsyncClient() <span class="kw">as</span> client:
+    resp = <span class="kw">await</span> client.get(url)
+
+<span class="cm"># async for — 异步迭代器（用于流式 LLM 响应）</span>
+stream = <span class="kw">await</span> client.chat.completions.create(..., stream=<span class="kw">True</span>)
+<span class="kw">async for</span> chunk <span class="kw">in</span> stream:
+    print(chunk.choices[<span class="num">0</span>].delta.content, end=<span class="str">""</span>)</pre>
+
+        <div class="hl">
+            <strong>💡 记忆方法：</strong> 同步版本前加 <code>async</code> 就是异步版本！
+            <code>with</code> → <code>async with</code>，<code>for</code> → <code>async for</code>
+        </div>
+    </div>
+</div>
+
+<!-- 1.6 同步 vs 异步完整对比表 -->
+<div class="section-title">⑥ 综合对比：Python vs Swift 异步编程</div>
+
+<div class="card">
+    <div class="card-header bg-green"><span>📌 完整对照表</span></div>
+    <div class="card-body">
+        <table class="cmp">
+            <tr><th>概念</th><th>Python</th><th>Swift</th></tr>
+            <tr><td>定义异步函数</td><td><code>async def fetch():</code></td><td><code>func fetch() async</code></td></tr>
+            <tr><td>等待</td><td><code>await fetch()</code></td><td><code>try await fetch()</code></td></tr>
+            <tr><td>启动入口</td><td><code>asyncio.run(main())</code></td><td><code>Task { await main() }</code></td></tr>
+            <tr><td>并发等待</td><td><code>asyncio.gather(c1, c2)</code></td><td><code>async let a = f1(); async let b = f2()</code></td></tr>
+            <tr><td>后台任务</td><td><code>asyncio.create_task(coro)</code></td><td><code>Task { ... }</code> / <code>Task.detached</code></td></tr>
+            <tr><td>异步迭代</td><td><code>async for x in stream:</code></td><td><code>for try await x in stream</code></td></tr>
+            <tr><td>异步上下文</td><td><code>async with ...</code></td><td>无直接对应</td></tr>
+            <tr><td>取消任务</td><td><code>task.cancel()</code></td><td><code>task.cancel()</code></td></tr>
+            <tr><td>超时</td><td><code>asyncio.wait_for(coro, timeout=10)</code></td><td><code>Task.withTimeout(10)</code></td></tr>
+            <tr><td>错误处理</td><td><code>try/except</code> 自己包</td><td><code>try await</code> 语言内置</td></tr>
+            <tr><td>协程 vs Task</td><td>await 协程对象 / Task 对象</td><td>await 异步函数 / Task 对象</td></tr>
+        </table>
+
+        <div class="tip">
+            <strong>关键区别：</strong>Swift 的 async/await 是<strong>语言内置</strong>的（编译器支持），Python 是<strong>库级实现</strong>（asyncio 标准库）。但用法和思想几乎一样。
+        </div>
+    </div>
+</div>
+
+<div class="verify-box">
+    能解释为什么 LLM 调用必须用异步而非多线程？<br>
+    能徒手写出 asyncio.gather 并发调用 LLM 的代码。
+</div>
+</div>
+
+
+<!-- ================================================================ -->
+<!-- 任务 2：类型标注 Type Hints -->
+<!-- ================================================================ -->
+
+<div class="section">
+<div class="section-title" style="font-size:22px;color:#e65100;border-left-color:#e65100;">📖 任务 2：类型标注 Type Hints</div>
+
+<!-- 2.1 基础语法 -->
+<div class="section-title">① 类型标注基础 — 变量 + 函数</div>
+
+<div class="card">
+    <div class="card-header" style="background:#fff3e0;color:#e65100;"><span>📌 给变量和函数加上类型</span></div>
+    <div class="card-body">
+
+        <table class="cmp">
+            <tr><th>场景</th><th>Python</th><th>Swift</th></tr>
+            <tr><td>变量</td><td><code>x: int = 1</code></td><td><code>var x: Int = 1</code></td></tr>
+            <tr><td>函数参数</td><td><code>def f(x: int, y: str):</code></td><td><code>func f(x: Int, y: String)</code></td></tr>
+            <tr><td>函数返回值</td><td><code>def f() -> bool:</code></td><td><code>func f() -> Bool</code></td></tr>
+            <tr><td>可选值</td><td><code>x: Optional[int] = None</code></td><td><code>var x: Int? = nil</code></td></tr>
+        </table>
+
+        <pre><span class="cm"># Python 类型标注（3.5+，可选）</span>
+name: <span class="kw">str</span> = <span class="str">"小明"</span>
+age: <span class="kw">int</span> = <span class="num">25</span>
+height: <span class="kw">float</span> = <span class="num">1.75</span>
+is_active: <span class="kw">bool</span> = <span class="kw">True</span>
+
+<span class="kw">def</span> <span class="fn">greet</span>(name: <span class="kw">str</span>, age: <span class="kw">int</span> = <span class="num">0</span>) -> <span class="kw">str</span>:
+    <span class="kw">return</span> <span class="str">f"你好，{name}"</span></pre>
+
+        <div class="hl">
+            <strong>💡 Python vs Swift 类型标注</strong>：语法几乎一样（Python 用小写 <code>int</code>，Swift 用大写 <code>Int</code>），但 Python 的类型标注是<strong>运行时可选的</strong>，Swift 是<strong>编译器强制</strong>的。
+        </div>
+    </div>
+</div>
+
+<!-- 2.2 容器类型 -->
+<div class="section-title">② 容器类型：list / dict / tuple</div>
+
+<div class="card">
+    <div class="card-header" style="background:#fff3e0;color:#e65100;"><span>📌 Python 3.9+ 可直接用内置类型做泛型</span></div>
+    <div class="card-body">
+
+        <table class="cmp">
+            <tr><th>容器</th><th>Python 3.9+（小写）</th><th>Python 3.8（大写 import）</th><th>Swift</th></tr>
+            <tr><td>列表</td><td><code>list[int]</code></td><td><code>List[int]</code></td><td><code>[Int]</code></td></tr>
+            <tr><td>字典</td><td><code>dict[str, int]</code></td><td><code>Dict[str, int]</code></td><td><code>[String: Int]</code></td></tr>
+            <tr><td>元组</td><td><code>tuple[str, int]</code></td><td><code>Tuple[str, int]</code></td><td><code>(String, Int)</code></td></tr>
+            <tr><td>集合</td><td><code>set[str]</code></td><td><code>Set[str]</code></td><td><code>Set<String></code></td></tr>
+        </table>
+
+        <pre><span class="cm"># 推荐写法（Python 3.9+）</span>
+nums: <span class="kw">list</span>[<span class="kw">int</span>] = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+mapping: <span class="kw">dict</span>[<span class="kw">str</span>, <span class="kw">int</span>] = {<span class="str">"a"</span>: <span class="num">1</span>}
+pair: <span class="kw">tuple</span>[<span class="kw">str</span>, <span class="kw">int</span>] = (<span class="str">"a"</span>, <span class="num">1</span>)</pre>
+    </div>
+</div>
+
+<!-- 2.3 Optional / Union / Literal -->
+<div class="section-title">③ Optional / Union / Literal — 常用高级类型</div>
+
+<div class="card">
+    <div class="card-header" style="background:#fff3e0;color:#e65100;"><span>📌 三个最常用的 typing 工具</span></div>
+    <div class="card-body">
+
+        <table class="cmp">
+            <tr><th>Python</th><th>含义</th><th>Swift 对应</th></tr>
+            <tr><td><code>Optional[str]</code> 或 <code>str | None</code></td><td>可能是 str 或 None</td><td><code>String?</code></td></tr>
+            <tr><td><code>Union[int, str]</code> 或 <code>int | str</code></td><td>可能是 int 或 str</td><td>没有直接对应（枚举 + 协议）</td></tr>
+            <tr><td><code>Literal["a", "b"]</code></td><td>值只能是 "a" 或 "b"</td><td><code>enum A: String { case a, b }</code></td></tr>
+        </table>
+
+        <pre><span class="kw">from typing import</span> Optional, Union, Literal
+
+<span class="cm"># Optional — 可能为 None</span>
+<span class="kw">def</span> <span class="fn">find_user</span>(id: <span class="kw">int</span>) -> <span class="kw">Optional</span>[<span class="kw">dict</span>]:
+    <span class="kw">if</span> id == <span class="num">1</span>:
+        <span class="kw">return</span> {<span class="str">"name"</span>: <span class="str">"小明"</span>}
+    <span class="kw">return</span> <span class="kw">None</span>
+
+<span class="cm"># Union — 多个类型之一</span>
+value: <span class="kw">Union</span>[<span class="kw">int</span>, <span class="kw">str</span>] = <span class="num">1</span>   <span class="cm"># 或者</span>
+value: <span class="kw">int</span> | <span class="kw">str</span> = <span class="str">"hello"</span>  <span class="cm"># Python 3.10+ 新语法</span>
+
+<span class="cm"># Literal — 限定为指定的字面量值（LangChain 大量用）</span>
+role: <span class="kw">Literal</span>[<span class="str">"user"</span>, <span class="str">"assistant"</span>, <span class="str">"system"</span>] = <span class="str">"user"</span>
+role = <span class="str">"admin"</span>  <span class="cm"># ❌ mypy 报错</span></pre>
+
+        <div class="item orange">
+            <div class="item-title"><span>💡 Literal 在 AI 库中的应用</span></div>
+            <div class="detail">
+                <pre><span class="cm"># 定义 ChatMessage 的 role 类型</span>
+Role = <span class="kw">Literal</span>[<span class="str">"user"</span>, <span class="str">"assistant"</span>, <span class="str">"system"</span>]
+
+<span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="fn">ChatMessage</span>:
+    role: Role       <span class="cm"># ✅ 类型安全：只能填这三个值</span>
+    content: <span class="kw">str</span></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2.4 Callable / TypedDict -->
+<div class="section-title">④ Callable / TypedDict — 函数和结构化字典类型</div>
+
+<div class="card">
+    <div class="card-header" style="background:#fff3e0;color:#e65100;"><span>📌 Callable = 函数类型 · TypedDict = 结构化的字典</span></div>
+    <div class="card-body">
+
+        <table class="cmp">
+            <tr><th>Python</th><th>Swift 对应</th></tr>
+            <tr><td><code>Callable[[int, str], bool]</code></td><td><code>(Int, String) -> Bool</code></td></tr>
+            <tr><td><code>class Msg(TypedDict): role: str; content: str</code></td><td><code>struct Msg { let role: String; let content: String }</code></td></tr>
+        </table>
+
+        <pre><span class="kw">from typing import</span> Callable, TypedDict
+
+<span class="cm"># Callable — 函数的类型</span>
+handler: <span class="kw">Callable</span>[[<span class="kw">int</span>, <span class="kw">int</span>], <span class="kw">bool</span>] = <span class="kw">lambda</span> x, y: x > y
+
+<span class="cm"># TypedDict — 结构化字典（等于 Swift 的 struct）</span>
+<span class="kw">class</span> <span class="fn">Message</span>(TypedDict):
+    role: <span class="kw">str</span>
+    content: <span class="kw">str</span>
+
+msg: Message = {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"你好"</span>}
+msg[<span class="str">"invalid"</span>]  <span class="cm"># ❌ mypy 报错：key 不存在</span></pre>
+
+        <div class="hl">
+            <strong>💡 TypedDict 的好处：</strong>IDE 能补全 key 名，mypy 能检查 key 是否存在。比普通 dict 安全得多。
+        </div>
+    </div>
+</div>
+
+<!-- 2.5 mypy -->
+<div class="section-title">⑤ mypy — 静态类型检查工具</div>
+
+<div class="card">
+    <div class="card-header" style="background:#fff3e0;color:#e65100;"><span>📌 相当于 Swift 编译器的类型检查</span></div>
+    <div class="card-body">
+
+        <pre><span class="cm"># 安装</span>
+pip install mypy
+
+<span class="cm"># 使用</span>
+mypy my_script.py          <span class="cm"># 检查类型错误</span>
+mypy --strict my_script.py  <span class="cm"># 严格模式</span>
+
+<span class="cm"># 常见错误示例</span>
+<span class="kw">def</span> <span class="fn">greet</span>(name: <span class="kw">str</span>) -> <span class="kw">str</span>:
+    <span class="kw">return</span> name + <span class="num">1</span>  <span class="cm"># ❌ mypy 报错：str + int 不兼容</span></pre>
+
+        <table>
+            <tr><th>mypy 配置</th><th>说明</th></tr>
+            <tr><td><code>--ignore-missing-imports</code></td><td>忽略导入的库没有类型标注</td></tr>
+            <tr><td><code>--strict</code></td><td>严格模式（推荐新项目用）</td></tr>
+            <tr><td><code>--python-version 3.11</code></td><td>指定 Python 版本</td></tr>
+        </table>
+
+        <div class="tip">
+            <strong>Swift 程序员视角：</strong>mypy ≈ Swift 编译器的类型检查。只不过 Swift 是<strong>实时的</strong>（写代码时就报错），Python 需要手动运行 <code>mypy</code>。Trae IDE 内置了 Pylance，也能实时显示类型错误。
+        </div>
+    </div>
+</div>
+
+<!-- 2.6 综合对比 -->
+<div class="section-title">⑥ 综合对比：Python Type Hints vs Swift 类型系统</div>
+
+<div class="card">
+    <div class="card-header" style="background:#fff3e0;color:#e65100;"><span>📌 完整对照表</span></div>
+    <div class="card-body">
+        <table class="cmp">
+            <tr><th>概念</th><th>Python</th><th>Swift</th></tr>
+            <tr><td>基础类型</td><td><code>int, str, float, bool</code>（小写）</td><td><code>Int, String, Double, Bool</code>（大写）</td></tr>
+            <tr><td>强制检查</td><td>可选（mypy 手动检查）</td><td>强制（编译器实时检查）</td></tr>
+            <tr><td>可选值</td><td><code>Optional[int]</code> 或 <code>int | None</code></td><td><code>Int?</code></td></tr>
+            <tr><td>联合类型</td><td><code>Union[int, str]</code> 或 <code>int | str</code></td><td>无直接对应（枚举+协议）</td></tr>
+            <tr><td>字面量类型</td><td><code>Literal["a", "b"]</code></td><td><code>enum</code></td></tr>
+            <tr><td>函数类型</td><td><code>Callable[[int], str]</code></td><td><code>(Int) -> String</code></td></tr>
+            <tr><td>结构化字典</td><td><code>TypedDict</code></td><td><code>struct</code></td></tr>
+            <tr><td>泛型</td><td><code>list[int], dict[str, int]</code></td><td><code>[Int], [String: Int]</code></td></tr>
+            <tr><td>协议/接口</td><td><code>Protocol</code>（typing）</td><td><code>protocol</code></td></tr>
+            <tr><td>类型别名</td><td><code>MyType = list[int]</code></td><td><code>typealias MyType = [Int]</code></td></tr>
+            <tr><td>运行时生效</td><td>❌ 不生效（纯标注）</td><td>✅ 编译器强制</td></tr>
+        </table>
+
+        <div class="hl">
+            <strong>💡 核心差异：</strong>Python 的类型标注是"给工具看"的（IDE、mypy），运行时完全被忽略。Swift 的类型是"给编译器看"的，<strong>运行时也强制</strong>遵守。但用 mypy 检查后，效果非常接近 Swift 的类型安全。
+        </div>
+    </div>
+</div>
+
+<div class="verify-box">
+    能徒手写出 <code>def fetch(url: str, timeout: int = 10) -> Optional[dict]</code><br>
+    能解释 TypedDict 和普通 dict 的区别。
+</div>
+</div>
+
+
+<!-- ================================================================ -->
+<!-- 任务 3：装饰器 -->
+<!-- ================================================================ -->
+
+<div class="section">
+<div class="section-title" style="font-size:22px;color:#6a1b9a;border-left-color:#6a1b9a;">📖 任务 3：装饰器原理</div>
+
+<!-- 3.1 本质 -->
+<div class="section-title">① 装饰器本质 — 高阶函数 + 闭包</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 装饰器 = 接收函数，返回新函数</span></div>
+    <div class="card-body">
+
+        <pre><span class="cm"># 装饰器的本质</span>
+<span class="kw">def</span> <span class="fn">decorator</span>(func):       <span class="cm"># ① 接收一个函数</span>
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):  <span class="cm"># ② 内部定义一个包装函数（闭包）</span>
+        <span class="cm"># 在调用原函数前/后做额外的事</span>
+        result = <span class="fn">func</span>(*args, **kwargs)
+        <span class="kw">return</span> result
+    <span class="kw">return</span> wrapper             <span class="cm"># ③ 返回包装函数</span>
+
+<span class="cm"># @ 语法糖等价于：my_func = decorator(my_func)</span>
+<span class="kw">@decorator</span>
+<span class="kw">def</span> <span class="fn">my_func</span>():
+    <span class="kw">pass</span></pre>
+
+        <table>
+            <tr><th>概念</th><th>关系</th></tr>
+            <tr><td><strong>闭包</strong></td><td>内部函数引用外部变量——一种编程机制</td></tr>
+            <tr><td><strong>装饰器</strong></td><td>用闭包包装另一个函数的模式——闭包的<strong>典型应用</strong></td></tr>
+        </table>
+
+        <div class="item purple">
+            <div class="item-title"><span>💡 Swift 对比：装饰器 = 高阶函数</span></div>
+            <div class="detail">
+                <p>Python 装饰器 ≈ Swift 中接收函数、返回函数的<strong>高阶函数</strong>：</p>
+                <pre><span class="cm">// Swift 等效</span>
+<span class="kw">func</span> timer&lt;T&gt;(<span class="kw">_</span> f: @escaping () -> T) -> () -> T {
+    <span class="kw">return</span> {
+        <span class="kw">let</span> start = CFAbsoluteTimeGetCurrent()
+        <span class="kw">let</span> result = f()
+        <span class="kw">let</span> elapsed = CFAbsoluteTimeGetCurrent() - start
+        print(<span class="str">"耗时: \(elapsed)s"</span>)
+        <span class="kw">return</span> result
+    }
+}
+
+<span class="cm">// 使用</span>
+<span class="kw">let</span> slowFunc = timer { slowFunc() }</pre>
+                <p>区别：Python 有 <code>@</code> 语法糖，Swift 没有直接对应的装饰器语法，但可以用高阶函数实现相同的效果。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3.2 @timer -->
+<div class="section-title">② 手写 @timer 装饰器（同步版 + 异步版）</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 计算函数执行时间</span></div>
+    <div class="card-body">
+
+        <pre><span class="cm"># 同步版 @timer</span>
+<span class="kw">import</span> time
+
+<span class="kw">def</span> <span class="fn">timer</span>(func):
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        start = <span class="fn">time.time</span>()
+        result = <span class="fn">func</span>(*args, **kwargs)
+        elapsed = <span class="fn">time.time</span>() - start
+        print(<span class="str">f"{func.__name__} 耗时: {elapsed:.4f}s"</span>)
+        <span class="kw">return</span> result
+    <span class="kw">return</span> wrapper
+
+<span class="kw">@timer</span>
+<span class="kw">def</span> <span class="fn">slow_func</span>():
+    <span class="fn">time.sleep</span>(<span class="num">1</span>)
+    <span class="kw">return</span> <span class="str">"完成"</span>
+
+<span class="fn">slow_func</span>()  <span class="cm"># 输出：slow_func 耗时: 1.0032s</span></pre>
+
+        <pre><span class="cm"># 异步版 @async_timer（用在 AsyncLLMClient 中）</span>
+<span class="kw">import</span> functools
+
+<span class="kw">def</span> <span class="fn">async_timer</span>(func):
+    <span class="kw">@functools.wraps</span>(func)
+    <span class="kw">async def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        start = <span class="fn">time.time</span>()
+        result = <span class="kw">await</span> <span class="fn">func</span>(*args, **kwargs)  <span class="cm"># await 原异步函数</span>
+        elapsed = <span class="fn">time.time</span>() - start
+        print(<span class="str">f"⏱ {func.__name__} 耗时 {elapsed:.2f}s"</span>)
+        <span class="kw">return</span> result
+    <span class="kw">return</span> wrapper</pre>
+
+        <table class="cmp">
+            <tr><th>&nbsp;</th><th>@timer（同步）</th><th>@async_timer（异步）</th></tr>
+            <tr><td>wrapper 类型</td><td><code>def wrapper(...)</code></td><td><code>async def wrapper(...)</code></td></tr>
+            <tr><td>调用原函数</td><td><code>func(*args)</code></td><td><code>await func(*args)</code></td></tr>
+            <tr><td>适用</td><td>普通函数</td><td>async def 协程函数</td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- 3.3 @wraps -->
+<div class="section-title">③ @functools.wraps — 保留原函数信息</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 让装饰后的函数保留原名字和文档</span></div>
+    <div class="card-body">
+
+        <pre><span class="cm"># ❌ 不加 @wraps 的后果</span>
+<span class="kw">def</span> <span class="fn">timer</span>(func):
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        <span class="str">"""我是 wrapper"""</span>
+        <span class="kw">return</span> <span class="fn">func</span>(*args, **kwargs)
+    <span class="kw">return</span> wrapper
+
+<span class="kw">@timer</span>
+<span class="kw">def</span> <span class="fn">hello</span>():
+    <span class="str">"""我是 hello"""</span>
+    <span class="kw">pass</span>
+
+print(<span class="fn">hello.__name__</span>)  <span class="cm"># → "wrapper"  ❌ 不是 "hello"</span>
+print(<span class="fn">hello.__doc__</span>)   <span class="cm"># → "我是 wrapper" ❌ 文档也丢了</span></pre>
+
+        <pre><span class="cm"># ✅ 加 @wraps 后</span>
+<span class="kw">import</span> functools
+
+<span class="kw">def</span> <span class="fn">timer</span>(func):
+    <span class="kw">@functools.wraps</span>(func)    <span class="cm"># ← 复制 func 的元信息到 wrapper</span>
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        <span class="kw">return</span> <span class="fn">func</span>(*args, **kwargs)
+    <span class="kw">return</span> wrapper
+
+print(<span class="fn">hello.__name__</span>)  <span class="cm"># → "hello" ✅</span>
+print(<span class="fn">hello.__doc__</span>)   <span class="cm"># → "我是 hello" ✅</span></pre>
+
+        <div class="hl-red">
+            <strong>⚠️ 必须加！</strong>写装饰器时永远加上 <code>@functools.wraps(func)</code>，否则调试时所有被装饰的函数都显示为 <code>wrapper</code>，无法区分。
+        </div>
+    </div>
+</div>
+
+<!-- 3.4 带参数装饰器 -->
+<div class="section-title">④ 带参数的装饰器 — 三层嵌套</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 比如 @retry(times=3)</span></div>
+    <div class="card-body">
+
+        <pre><span class="kw">def</span> <span class="fn">retry</span>(times: <span class="kw">int</span> = <span class="num">3</span>, delay: <span class="kw">float</span> = <span class="num">0</span>):
+    <span class="str">"""失败重试装饰器"""</span>
+    <span class="kw">def</span> <span class="fn">decorator</span>(func):           <span class="cm"># 中层：接收函数</span>
+        <span class="kw">@functools.wraps</span>(func)
+        <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+            <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(times):
+                <span class="kw">try</span>:
+                    <span class="kw">return</span> <span class="fn">func</span>(*args, **kwargs)
+                <span class="kw">except</span> Exception <span class="kw">as</span> e:
+                    <span class="kw">if</span> i == times - <span class="num">1</span>: <span class="kw">raise</span>
+                    print(<span class="str">f"重试 {i+1}/{times}"</span>)
+                    <span class="kw">if</span> delay: <span class="fn">time.sleep</span>(delay)
+        <span class="kw">return</span> wrapper
+    <span class="kw">return</span> decorator               <span class="cm"># 返回中层</span>
+
+<span class="kw">@retry</span>(times=<span class="num">3</span>, delay=<span class="num">1</span>)
+<span class="kw">def</span> <span class="fn">unstable_api</span>():
+    ...</pre>
+
+        <div class="hl">
+            <strong>💡 三层嵌套的执行顺序：</strong><br>
+            <code>@retry(times=3)</code> → 先调用 <code>retry(3)</code> 返回 <code>decorator</code><br>
+            → <code>@decorator</code> 再把下面的函数传进去 → 返回 <code>wrapper</code><br>
+            最终：<code>unstable_api = wrapper</code>
+        </div>
+    </div>
+</div>
+
+<!-- 3.5 内置装饰器 -->
+<div class="section-title">⑤ Python 内置装饰器大全</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 @property / @staticmethod / @classmethod / @cached_property</span></div>
+    <div class="card-body">
+
+        <table>
+            <tr><th>装饰器</th><th>作用</th><th>Swift 对应</th></tr>
+            <tr><td><code>@property</code></td><td>方法变属性（不加括号访问）</td><td>computed property</td></tr>
+            <tr><td><code>@staticmethod</code></td><td>静态方法（不需要 self）</td><td><code>static func</code></td></tr>
+            <tr><td><code>@classmethod</code></td><td>类方法（接收 cls 参数）</td><td><code>class func</code></td></tr>
+            <tr><td><code>@dataclass</code></td><td>自动生成 __init__、__repr__、__eq__</td><td>struct 自动生成</td></tr>
+            <tr><td><code>@functools.wraps</code></td><td>保留原函数元信息</td><td>无直接对应</td></tr>
+            <tr><td><code>@functools.cached_property</code></td><td>属性值缓存（只算一次）</td><td><code>lazy var</code></td></tr>
+            <tr><td><code>@functools.lru_cache</code></td><td>函数结果 LRU 缓存</td><td>无直接对应</td></tr>
+        </table>
+
+        <pre><span class="cm"># @cached_property — 相当于 Swift 的 lazy var</span>
+<span class="kw">from functools import</span> cached_property
+
+<span class="kw">class</span> <span class="fn">DataProcessor</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, data):
+        self.data = data
+
+    <span class="kw">@cached_property</span>
+    <span class="kw">def</span> <span class="fn">processed</span>(self):
+        print(<span class="str">"处理中..."</span>)   <span class="cm"># 只打印一次</span>
+        <span class="kw">return</span> [x * <span class="num">2</span> <span class="kw">for</span> x <span class="kw">in</span> self.data]
+
+dp = DataProcessor([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])
+print(dp.processed)  <span class="cm"># → 计算并返回</span>
+print(dp.processed)  <span class="cm"># → 直接返回缓存 ✅</span></pre>
+
+        <div class="item purple">
+            <div class="item-title"><span>💡 AI 库中常见的装饰器</span></div>
+            <div class="detail">
+                <table>
+                    <tr><th>库</th><th>装饰器</th><th>用途</th></tr>
+                    <tr><td>FastAPI</td><td><code>@app.get("/")</code></td><td>路由注册</td></tr>
+                    <tr><td>LangChain</td><td><code>@tool</code></td><td>把函数变成 AI 工具</td></tr>
+                    <tr><td>PyTorch</td><td><code>@torch.no_grad()</code></td><td>推理时禁用梯度</td></tr>
+                    <tr><td>pytest</td><td><code>@pytest.fixture</code></td><td>测试夹具</td></tr>
+                    <tr><td>Flask</td><td><code>@app.route("/")</code></td><td>路由注册</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3.6 多装饰器 -->
+<div class="section-title">⑥ 多装饰器叠加 — 执行顺序</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 从下往上装饰，从上往下执行（洋葱模型）</span></div>
+    <div class="card-body">
+
+        <pre><span class="cm"># 多个装饰器叠加</span>
+<span class="kw">@decorator_a</span>
+<span class="kw">@decorator_b</span>
+<span class="kw">@decorator_c</span>
+<span class="kw">def</span> <span class="fn">my_func</span>():
+    <span class="kw">pass</span>
+
+<span class="cm"># 等价于：my_func = decorator_a(decorator_b(decorator_c(my_func)))</span>
+<span class="cm">#              ↑ 从下往上装饰</span>
+
+<span class="cm"># 执行时像洋葱：a外 → b外 → c外 → 真正的函数 → c内 → b内 → a内</span></pre>
+
+        <pre><span class="cm"># 实例：HTML 标签装饰器</span>
+<span class="kw">def</span> <span class="fn">bold</span>(func):
+    <span class="kw">@functools.wraps</span>(func)
+    <span class="kw">def</span> <span class="fn">wrapper</span>():
+        <span class="kw">return</span> <span class="str">f"&lt;b&gt;{func()}&lt;/b&gt;"</span>
+    <span class="kw">return</span> wrapper
+
+<span class="kw">def</span> <span class="fn">italic</span>(func):
+    <span class="kw">@functools.wraps</span>(func)
+    <span class="kw">def</span> <span class="fn">wrapper</span>():
+        <span class="kw">return</span> <span class="str">f"&lt;i&gt;{func()}&lt;/i&gt;"</span>
+    <span class="kw">return</span> wrapper
+
+<span class="kw">@bold</span>       <span class="cm"># 第二步装饰</span>
+<span class="kw">@italic</span>     <span class="cm"># 第一步装饰</span>
+<span class="kw">def</span> <span class="fn">hello</span>():
+    <span class="kw">return</span> <span class="str">"Hello"</span>
+
+print(<span class="fn">hello</span>())  <span class="cm"># → &lt;b&gt;&lt;i&gt;Hello&lt;/i&gt;&lt;/b&gt;</span>
+<span class="cm"># 执行顺序：bold 先 → italic 后 → hello → italic 结束 → bold 结束</span></pre>
+    </div>
+</div>
+
+<!-- 3.7 综合对比 -->
+<div class="section-title">⑦ 综合对比：Python 装饰器 vs Swift</div>
+
+<div class="card">
+    <div class="card-header bg-purple"><span>📌 完整对照表</span></div>
+    <div class="card-body">
+        <table class="cmp">
+            <tr><th>概念</th><th>Python</th><th>Swift</th></tr>
+            <tr><td>装饰器模式</td><td><code>@decorator</code> 语法糖</td><td>高阶函数手动实现</td></tr>
+            <tr><td>本质</td><td><code>func = decorator(func)</code></td><td><code>func = decorate(func)</code></td></tr>
+            <tr><td>@property</td><td><code>@property</code> 装饰器</td><td><code>var name: Type { get set }</code></td></tr>
+            <tr><td>@staticmethod</td><td><code>@staticmethod</code></td><td><code>static func</code></td></tr>
+            <tr><td>@classmethod</td><td><code>@classmethod</code></td><td><code>class func</code></td></tr>
+            <tr><td>数据类</td><td><code>@dataclass</code></td><td><code>struct</code>（自动生成）</td></tr>
+            <tr><td>属性懒加载</td><td><code>@cached_property</code></td><td><code>lazy var</code></td></tr>
+            <tr><td>语法糖支持</td><td>✅ 语言内置（@）</td><td>❌ 无，需手动包装</td></tr>
+            <tr><td>运行时动态修改</td><td>✅ 可以（函数/类都可以装饰）</td><td>❌ 编译时确定</td></tr>
+        </table>
+
+        <div class="hl">
+            <strong>💡 关键区别：</strong>Python 的装饰器更灵活（运行时修改函数/类），Swift 更安全（编译时确定类型）。Python 用 <code>@</code> 语法糖让代码更简洁。
+        </div>
+    </div>
+</div>
+
+<div class="verify-box">
+    能徒手写 @timer 装饰器并解释 @wraps 的作用<br>
+    能解释为什么 FastAPI/LangChain 大量使用装饰器。
+</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 总复习 -->
+<!-- ================================================================ -->
+
+<div class="section">
+<div class="section-title" style="font-size:20px;color:#e94560;">📋 任务 1-3 复习自测</div>
+
+<div class="card">
+    <div class="card-header bg-red"><span>📌 这些问题都能答上来吗？</span></div>
+    <div class="card-body">
+        <p><strong>异步编程：</strong></p>
+        <ul style="margin:4px 0 12px 20px;font-size:13px;">
+            <li>同步和异步的本质区别是什么？（阻塞 vs 不阻塞）</li>
+            <li>事件循环是什么？为什么单线程能处理高并发？</li>
+            <li><code>await</code> 做了什么？遇到 await 程序会暂停吗？</li>
+            <li><code>asyncio.gather()</code> 和 <code>asyncio.create_task()</code> 的区别？</li>
+            <li><code>async for</code> 和普通 <code>for</code> 的区别？</li>
+            <li>为什么 LLM 调用必须用异步而非多线程？</li>
+        </ul>
+
+        <p><strong>类型标注：</strong></p>
+        <ul style="margin:4px 0 12px 20px;font-size:13px;">
+            <li><code>Optional[str]</code> 和 <code>str | None</code> 的区别？</li>
+            <li><code>Literal["a", "b"]</code> 在 AI 库中的作用？</li>
+            <li><code>TypedDict</code> 和普通 dict 的区别？</li>
+            <li>mypy 是什么？和 Swift 编译器的类型检查有什么异同？</li>
+        </ul>
+
+        <p><strong>装饰器：</strong></p>
+        <ul style="margin:4px 0 0 20px;font-size:13px;">
+            <li>装饰器的本质是什么？和闭包的关系？</li>
+            <li>为什么写装饰器必须加 <code>@functools.wraps</code>？</li>
+            <li>带参数的装饰器怎么写？（三层嵌套）</li>
+            <li>多个装饰器叠加时的执行顺序？（洋葱模型）</li>
+            <li>AI 库中使用装饰器的例子？（FastAPI/LangChain/PyTorch）</li>
+        </ul>
+    </div>
+</div>
+
+<div class="tip">
+    <strong>📌 明天预告：</strong>NumPy 速通（ndarray/广播/矩阵运算）+ Pandas 速通（DataFrame/groupby）+ 手撸向量相似度算法 + Alpaca 微调数据集清洗。
+</div>
+</div>
+
+<div class="footer">
+    Day 3 · 异步编程 + 类型标注 + 装饰器 · Python vs Swift 对照 · 2026.06.03
+</div>
+
+</div>
+</body>
+</html>

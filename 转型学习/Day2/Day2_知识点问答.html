@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 2 知识点问答 - Python函数与OOP</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; background: #f0f2f5; color: #1a1a2e; padding: 20px; }
+.page { max-width: 860px; margin: 0 auto; }
+
+/* 头部 */
+.header { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: #fff; padding: 28px 36px; border-radius: 14px 14px 0 0; }
+.header h1 { font-size: 24px; margin-bottom: 6px; }
+.header .sub { opacity: 0.8; font-size: 14px; }
+
+/* 分类导航 */
+.category-bar { display: flex; gap: 8px; padding: 16px 0; flex-wrap: wrap; }
+.cat-btn { padding: 6px 16px; border: 2px solid #ddd; border-radius: 20px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+.cat-btn:hover { border-color: #302b63; }
+.cat-btn.active { background: #302b63; color: #fff; border-color: #302b63; }
+
+/* 问答卡片 */
+.qa-card { background: #fff; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; transition: box-shadow 0.2s; }
+.qa-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+
+.qa-question { padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; user-select: none; }
+.qa-question .q-icon { background: #302b63; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+.qa-question .q-text { flex: 1; font-size: 15px; font-weight: 600; line-height: 1.5; }
+.qa-question .q-toggle { font-size: 18px; color: #999; transition: transform 0.3s; flex-shrink: 0; }
+.qa-card.open .q-toggle { transform: rotate(180deg); }
+
+.qa-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease; padding: 0 20px; }
+.qa-card.open .qa-answer { max-height: 2000px; padding: 0 20px 20px 20px; }
+
+.qa-answer .a-body { font-size: 14px; line-height: 1.8; color: #333; }
+.qa-answer .a-body p { margin: 6px 0; }
+.qa-answer .a-body strong { color: #0d47a1; }
+.qa-answer .a-body code { background: #f5f5f5; padding: 1px 6px; border-radius: 4px; font-family: "Cascadia Code", "Fira Code", monospace; font-size: 13px; color: #c62828; }
+.qa-answer .a-body pre { background: #1e1e2e; color: #cdd6f4; padding: 12px 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 8px 0; font-family: "Cascadia Code", monospace; }
+.qa-answer .tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+.tag-func { background: #e3f2fd; color: #1565c0; }
+.tag-oop { background: #ede7f6; color: #4a148c; }
+.tag-llm { background: #e8f5e9; color: #2e7d32; }
+.tag-test { background: #fff3e0; color: #ef6c00; }
+
+/* 底部统计 */
+.stats { text-align: center; padding: 20px; color: #666; font-size: 13px; }
+
+/* 搜索框 */
+.search-box { padding: 12px 0; }
+.search-box input { width: 100%; padding: 10px 16px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+.search-box input:focus { border-color: #302b63; }
+
+@media (max-width: 600px) {
+  body { padding: 10px; }
+  .header { padding: 20px; }
+  .qa-question { padding: 14px 16px; }
+  .qa-question .q-text { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<div class="header">
+  <h1>📘 Day 2 知识点问答</h1>
+  <div class="sub">Python 函数进阶 · 面向对象 & dataclass · LLMClient 封装 · pytest 测试</div>
+</div>
+
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="🔍 搜索问题..." oninput="filterCards()">
+</div>
+
+<div class="category-bar" id="categoryBar">
+  <button class="cat-btn active" data-cat="all" onclick="filterByCat('all')">全部 (26)</button>
+  <button class="cat-btn" data-cat="func" onclick="filterByCat('func')">函数进阶</button>
+  <button class="cat-btn" data-cat="oop" onclick="filterByCat('oop')">面向对象</button>
+  <button class="cat-btn" data-cat="llm" onclick="filterByCat('llm')">LLMClient</button>
+  <button class="cat-btn" data-cat="test" onclick="filterByCat('test')">pytest</button>
+</div>
+
+<!-- ════════════════════════════════ -->
+<!-- 模块 1：函数进阶 -->
+<!-- ════════════════════════════════ -->
+
+<div class="qa-card" data-cat="func">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">1</span>
+    <span class="q-text">位置参数和关键字参数有什么区别？<code>*</code> 在函数定义中怎么用？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-func">函数进阶</span></p>
+      <p><strong>位置参数（positional arguments）</strong>：按调用时传入的位置顺序匹配参数名。</p>
+      <p><strong>关键字参数（keyword arguments）</strong>：用 <code>name=value</code> 形式指定参数名传参，顺序可以任意。</p>
+      <pre>def greet(name, greeting, punctuation="!"):
+    print(f"{greeting}, {name}{punctuation}")
+
+# 位置参数
+greet("小明", "你好")           # → 你好, 小明!
+
+# 关键字参数
+greet(greeting="Hello", name="Alice")  # 顺序随便
+
+# 混合：位置参数必须在关键字参数之前
+greet("Bob", greeting="Hi")</pre>
+      <p><strong>单独的 <code>*</code></strong>（在参数列表中）：表示后面的参数<strong>只能用关键字传参</strong>，强制明确。</p>
+      <pre>def f(a, b, *, c, d):
+    pass
+
+f(1, 2, c=3, d=4)   # ✅ 正确
+f(1, 2, 3, 4)       # ❌ TypeError: c 是仅限关键字参数</pre>
+      <p><strong>为什么有用？</strong>LangChain/FastAPI 大量使用这种模式，让 API 调用更可读、不易出错。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="func">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">2</span>
+    <span class="q-text"><code>*args</code> 是什么？怎么用？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-func">函数进阶</span></p>
+      <p><strong><code>*args</code></strong> 用来接收<strong>任意数量的位置参数</strong>，在函数内部是一个<strong>元组（tuple）</strong>。</p>
+      <pre>def sum_all(*args):
+    print(type(args))  # <class 'tuple'>
+    return sum(args)
+
+print(sum_all(1, 2, 3, 4))  # → 10
+print(sum_all())             # → 0</pre>
+      <p><strong>也可以配合普通参数</strong>：</p>
+      <pre>def log(level, *messages):
+    for msg in messages:
+        print(f"[{level}] {msg}")
+
+log("INFO", "启动", "连接成功", "处理完成")</pre>
+      <p><strong>拆包（unpacking）</strong>：在调用时用 <code>*</code> 把列表/元组展开：</p>
+      <pre>nums = [10, 20, 30]
+print(sum_all(*nums))  # 等价于 sum_all(10, 20, 30)</pre>
+      <p><strong>类比 Swift：</strong>可变参数 <code>func sum(_ numbers: Int...) -> Int</code>。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="func">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">3</span>
+    <span class="q-text"><code>**kwargs</code> 是什么？和 <code>*args</code> 有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-func">函数进阶</span></p>
+      <p><strong><code>**kwargs</code></strong> 用来接收<strong>任意数量的关键字参数</strong>，在函数内部是一个<strong>字典（dict）</strong>。</p>
+      <pre>def print_config(**kwargs):
+    for key, value in kwargs.items():
+        print(f"{key} = {value}")
+
+print_config(host="localhost", port=8080, debug=True)
+# 输出:
+# host = localhost
+# port = 8080
+# debug = True</pre>
+      <p><strong>与 *args 的区别</strong>：</p>
+      <table style="border-collapse:collapse;margin:6px 0;font-size:13px;">
+        <tr style="background:#f5f5f5;"><td style="padding:6px 12px;border:1px solid #ddd;">&nbsp;</td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>*args</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>**kwargs</strong></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">接收</td><td style="padding:6px 12px;border:1px solid #ddd;">位置参数</td><td style="padding:6px 12px;border:1px solid #ddd;">关键字参数</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">类型</td><td style="padding:6px 12px;border:1px solid #ddd;">tuple</td><td style="padding:6px 12px;border:1px solid #ddd;">dict</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">调用解包</td><td style="padding:6px 12px;border:1px solid #ddd;"><code>func(*list)</code></td><td style="padding:6px 12px;border:1px solid #ddd;"><code>func(**dict)</code></td></tr>
+      </table>
+      <p><strong>拆包调用</strong>：</p>
+      <pre>config = {"host": "localhost", "port": 8080}
+print_config(**config)  # 把字典展开成关键字参数</pre>
+      <p><strong>为什么 AI 库到处都是 **kwargs？</strong>因为 API 函数需要透传大量参数给底层，用 <code>**kwargs</code> 就不用把所有参数都显式写出来。例如 <code>ChatOpenAI(model="...", temperature=0.7, **kwargs)</code>。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="func">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">4</span>
+    <span class="q-text">默认参数陷阱是什么？<code>def f(x=[])</code> 为什么是坑？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-func">函数进阶</span></p>
+      <p>Python 的默认参数值<strong>只在函数定义时创建一次</strong>，之后每次调用都复用<strong>同一个对象</strong>。</p>
+      <pre>def add_item(item, items=[]):
+    items.append(item)
+    return items
+
+print(add_item("a"))  # → ['a']
+print(add_item("b"))  # → ['a', 'b']   ← 不是 ['b']！
+print(add_item("c"))  # → ['a', 'b', 'c']</style></pre>
+      <p><strong>原因：</strong>默认列表 <code>[]</code> 在函数定义时只创建一次，每次调用共享同一个列表。</p>
+      <p><strong>正确做法</strong>：用 <code>None</code> 作为默认值，在函数体内创建：</p>
+      <pre>def add_item(item, items=None):
+    if items is None:
+        items = []
+    items.append(item)
+    return items</pre>
+      <p><strong>同样的坑也适用于：</strong><code>def f(d={})</code>（可变字典）、<code>def f(s=set())</code>（可变集合）。不可变类型（int, str, tuple）不会有这个问题。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="func">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">5</span>
+    <span class="q-text">Lambda 函数是什么？和 Swift 闭包有什么对应关系？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-func">函数进阶</span></p>
+      <p><strong>Lambda</strong> 是 Python 的匿名函数，一行写完，自动 return：</p>
+      <pre># 语法：lambda 参数: 表达式
+double = lambda x: x * 2
+print(double(5))  # → 10
+
+# 常用于排序、map/filter
+nums = [3, 1, 4, 1, 5]
+nums.sort(key=lambda x: -x)  # 按降序排列
+
+# map: 对每个元素应用函数
+list(map(lambda x: x**2, [1, 2, 3]))  # → [1, 4, 9]
+
+# filter: 过滤
+list(filter(lambda x: x > 2, [1, 2, 3, 4]))  # → [3, 4]</pre>
+      <p><strong>Swift 对照：</strong></p>
+      <pre>// Swift
+let double = { $0 * 2 }
+double(5)  // → 10
+
+// Python
+double = lambda x: x * 2
+double(5)  # → 10</pre>
+      <p><strong>限制：</strong>Lambda 只能写一个表达式，不能写语句（不能有 if/for/print 等）。复杂逻辑用普通 <code>def</code>。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="func">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">6</span>
+    <span class="q-text">闭包（Closure）是什么？怎么用 <code>nonlocal</code>？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-func">函数进阶</span></p>
+      <p><strong>闭包</strong>：一个内部函数"记住"并访问了外部函数的变量，即使外部函数已经执行完毕。</p>
+      <pre>def make_counter():
+    count = 0        # 外部函数的局部变量
+    def counter():   # 内部函数（闭包）
+        nonlocal count  # 声明要修改外部变量
+        count += 1
+        return count
+    return counter   # 返回内部函数
+
+# 使用
+c1 = make_counter()
+print(c1())  # → 1
+print(c1())  # → 2
+print(c1())  # → 3
+
+# 每个闭包独立
+c2 = make_counter()
+print(c2())  # → 1 (新的独立计数器)</pre>
+      <p><strong><code>nonlocal</code> 的作用</strong>：告诉 Python "我要修改外层函数的变量"，不加的话会创建一个新的局部变量。</p>
+      <p><strong>和 Swift 的对比</strong>：Swift 闭包也有捕获（capture）机制，默认捕获是强引用，需要用 <code>[weak self]</code> 避免循环引用。</p>
+      <p><strong>实际应用</strong>：装饰器（decorator）本质上就是用闭包实现的——装饰器是一个函数 A，它接收一个函数 B，返回一个闭包 C，C 包装了 B 并添加了额外逻辑。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="func">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">7</span>
+    <span class="q-text">装饰器（Decorator）的原理是什么？和闭包的关系？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-func">函数进阶</span></p>
+      <p><strong>装饰器</strong>本质就是一个<strong>接收函数、返回新函数</strong>的函数（底层就是闭包）。</p>
+      <pre>def timer(func):          # 装饰器函数
+    def wrapper(*args, **kwargs):  # 闭包
+        import time
+        start = time.time()
+        result = func(*args, **kwargs)
+        print(f"耗时: {time.time()-start:.3f}s")
+        return result
+    return wrapper
+
+@timer                    # 语法糖：等价于 slow_func = timer(slow_func)
+def slow_func():
+    import time
+    time.sleep(1)
+    return "done"
+
+slow_func()  # 输出: 耗时: 1.003s</pre>
+      <p><strong>不加 @ 的等价写法</strong>：</p>
+      <pre>def slow_func():
+    ...
+slow_func = timer(slow_func)  # 手动装饰</pre>
+      <p><strong>装饰器和闭包的对比</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>闭包是"内部函数引用外部变量"的机制</li>
+        <li>装饰器是"用闭包包装另一个函数"的模式</li>
+        <li>装饰器是闭包的<strong>典型应用</strong>，但不是闭包的全部</li>
+      </ul>
+      <p>FastAPI、Flask、pytest 大量使用装饰器。比如 <code>@app.get("/")</code>、<code>@pytest.fixture</code>。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ -->
+<!-- 模块 2：面向对象 & dataclass -->
+<!-- ════════════════════════════════ -->
+
+<div class="qa-card" data-cat="oop">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">8</span>
+    <span class="q-text">Python 的 class 和 Swift 的 class 核心区别是什么？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-oop">面向对象</span></p>
+      <p><strong>语法对照：</strong></p>
+      <pre>// Swift
+class Dog {
+    let name: String
+    init(name: String) { self.name = name }
+    func bark() { print("\(name) 汪汪!") }
+}
+
+# Python
+class Dog:
+    def __init__(self, name: str):
+        self.name = name
+    def bark(self):
+        print(f"{self.name} 汪汪!")</pre>
+      <p><strong>核心区别：</strong></p>
+      <table style="border-collapse:collapse;margin:6px 0;font-size:13px;">
+        <tr style="background:#f5f5f5;"><td style="padding:6px 12px;border:1px solid #ddd;"><strong>特性</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>Swift</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>Python</strong></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">self/this</td><td style="padding:6px 12px;border:1px solid #ddd;">隐式 self</td><td style="padding:6px 12px;border:1px solid #ddd;">必须显式写 self</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">构造函数</td><td style="padding:6px 12px;border:1px solid #ddd;"><code>init()</code></td><td style="padding:6px 12px;border:1px solid #ddd;"><code>__init__()</code></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">访问控制</td><td style="padding:6px 12px;border:1px solid #ddd;">public/internal/private</td><td style="padding:6px 12px;border:1px solid #ddd;">全靠约定（_ 表示私有）</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">属性</td><td style="padding:6px 12px;border:1px solid #ddd;">var/let</td><td style="padding:6px 12px;border:1px solid #ddd;">直接在 __init__ 里 self.x = x</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">计算属性</td><td style="padding:6px 12px;border:1px solid #ddd;"><code>var x: Int { return ... }</code></td><td style="padding:6px 12px;border:1px solid #ddd;"><code>@property</code></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">打印对象</td><td style="padding:6px 12px;border:1px solid #ddd;">CustomStringConvertible</td><td style="padding:6px 12px;border:1px solid #ddd;"><code>__str__ / __repr__</code></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="oop">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">9</span>
+    <span class="q-text"><code>self</code> 在 Python 里为什么必须写？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-oop">面向对象</span></p>
+      <p>这是 Python 和 Swift 最明显的差异之一。</p>
+      <p><strong>Python 的设计哲学：</strong>"显式优于隐式"（Explicit is better than implicit）。</p>
+      <pre>class Dog:
+    def __init__(self, name):  # self 就是"这个实例自己"
+        self.name = name       # self.name 是实例属性
+    
+    def bark(self):            # 每个方法第一个参数都是 self
+        print(f"{self.name} 汪汪!")
+
+# 调用时，Python 会自动把实例传进去
+d = Dog("旺财")
+d.bark()  # 等价于 Dog.bark(d)
+
+# 所以 self 就是实例本身，相当于 Swift 的 self</pre>
+      <p><strong>Swift 对比</strong>：</p>
+      <pre>// Swift 里 self 是隐式的，不写也行
+class Dog {
+    var name: String
+    func bark() { print("\(name) 汪汪!") }
+}
+
+# Python 必须写 self，不写会报错
+class Dog:
+    def bark(self):  # 少写 self 会报: takes 0 positional arguments but 1 was given
+        print("汪汪!")</pre>
+      <p><strong>为什么 Python 要这样设计？</strong>因为 Python 的方法本质就是函数，<code>instance.method()</code> ≈ <code>Class.method(instance)</code>，所以必须明确把实例传进来。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="oop">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">10</span>
+    <span class="q-text"><code>@property</code> 是什么？等于 Swift 的什么？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-oop">面向对象</span></p>
+      <p><code>@property</code> 把方法变成<strong>像属性一样访问</strong>，相当于 Swift 的<strong>计算属性（computed property）</strong>。</p>
+      <pre>class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    @property
+    def area(self):       # 像属性一样调用，不用加 ()
+        return 3.14 * self.radius ** 2
+
+    @property
+    def diameter(self):
+        return self.radius * 2
+
+c = Circle(5)
+print(c.area)      # 不用 c.area()
+print(c.diameter)  # 不用 c.diameter()
+
+# 也可以设置 setter（类似 Swift 的 set）
+@area.setter
+def area(self, value):
+    self.radius = (value / 3.14) ** 0.5</pre>
+      <p><strong>Swift 对照：</strong></p>
+      <pre>// Swift
+class Circle {
+    var radius: Double
+    var area: Double {  // 计算属性
+        return 3.14 * radius * radius
+    }
+}</pre>
+      <p><strong>为什么有用？</strong>在 LLMClient 中 <code>history_length</code> 就是用 @property 实现的，调用方用 <code>client.history_length</code> 而不是 <code>client.history_length()</code>，代码更简洁。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="oop">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">11</span>
+    <span class="q-text"><code>@dataclass</code> 是什么？它自动帮我们生成了什么？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-oop">面向对象</span></p>
+      <p><code>@dataclass</code> 是 Python 3.7+ 引入的装饰器，<strong>自动生成</strong>以下方法，省去大量重复代码：</p>
+      <pre>from dataclasses import dataclass
+
+@dataclass
+class ChatMessage:
+    role: str
+    content: str
+
+# ⬆ 相当于手动写了下面全部 ⬇
+
+class ChatMessage:
+    def __init__(self, role: str, content: str):
+        self.role = role
+        self.content = content
+    def __repr__(self):          # 打印对象
+        return f"ChatMessage(role='{self.role}', content='{self.content}')"
+    def __eq__(self, other):     # 比较两个对象
+        return self.role == other.role and self.content == other.content</pre>
+      <p><strong>自动生成的方法：</strong></p>
+      <ul style="margin:4px 0 0 20px;">
+        <li><code>__init__</code> — 构造函数</li>
+        <li><code>__repr__</code> — 调试打印（<code>print(msg)</code> 显示内容）</li>
+        <li><code>__eq__</code> — 比较相等（<code>msg1 == msg2</code>）</li>
+        <li>可选：<code>__hash__</code>、<code>__lt__</code> 等</li>
+      </ul>
+      <p><strong>和 Swift 的对比</strong>：<code>@dataclass</code> ≈ Swift 的 <code>struct</code>（自动生成初始化器和 Equatable 等）。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="oop">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">12</span>
+    <span class="q-text"><code>field(default_factory=...)</code> 是什么？为什么需要它？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-oop">面向对象</span></p>
+      <p>这是 dataclass 中处理<strong>可变默认值</strong>的方式。</p>
+      <p><strong>问题</strong>：dataclass 也不允许直接用可变对象做默认值（同样有"默认参数陷阱"）：</p>
+      <pre>@dataclass
+class Client:
+    history: list = []  # ❌ 会报错：ValueError
+    # 原因：所有实例会共享同一个 list</pre>
+      <p><strong>解决方案</strong>：用 <code>field(default_factory=...)</code>，每次创建实例时调用工厂函数生成新对象：</p>
+      <pre>from dataclasses import dataclass, field
+
+@dataclass
+class LLMClient:
+    api_key: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
+    # 等价于：每次创建实例都调用一次 os.getenv("OPENAI_API_KEY")
+
+    _history: list = field(default_factory=list)
+    # 每次创建都新建一个空列表，互不共享</pre>
+      <p><strong>lambda</strong> 在这里的作用：不是直接赋值，而是提供一个"创建函数"，每次需要默认值时调用它。</p>
+      <p><strong>常见用途</strong>：从环境变量读配置、创建空列表/字典/集合。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="oop">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">13</span>
+    <span class="q-text"><code>__post_init__</code> 是什么？什么时候会被调用？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-oop">面向对象</span></p>
+      <p><code>__post_init__</code> 是 dataclass 提供的一个<strong>钩子方法</strong>，在 <code>__init__</code> 执行完毕后<strong>自动调用</strong>。</p>
+      <pre>@dataclass
+class LLMClient:
+    api_key: str = ...  # dataclass 自动生成 __init__
+
+    def __post_init__(self):
+        # ⭐ 这里的代码会在 __init__ 完成后自动执行
+        self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        self._history = []
+        self.reset()
+
+# 创建实例时：
+client = LLMClient()
+# 1️⃣ dataclass 自动执行生成的 __init__（给字段赋值）
+# 2️⃣ 自动调用 __post_init__(self)
+# 3️⃣ 所以在 __post_init__ 里可以安全地使用 self.api_key</pre>
+      <p><strong>为什么需要它？</strong></p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>dataclass 的 <code>__init__</code> 只能做字段赋值</li>
+        <li>如果你还需要做额外初始化（创建其他对象、调用方法），就在 <code>__post_init__</code> 里做</li>
+        <li>相当于 Swift 中在 <code>init</code> 里写额外逻辑</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="oop">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">14</span>
+    <span class="q-text">Python 的 <code>_private</code> 约定和 Swift 的 <code>private</code> 有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-oop">面向对象</span></p>
+      <p><strong>Python 没有真正的 private！</strong> 全靠命名约定：</p>
+      <pre>class Example:
+    def __init__(self):
+        self.public = "谁都能访问"
+        self._private = "建议不要直接访问"  # 单下划线：约定"我私有的"
+        self.__mangled = "名字会被改写"     # 双下划线：触发 name mangling
+
+e = Example()
+print(e.public)      # ✅ 正常
+print(e._private)    # ⚠️ 能访问，但约定"不要这样做"
+print(e._Example__mangled)  # 双下划线实际改成了 _ClassName__attr</pre>
+      <p><strong>Swift vs Python 对比</strong>：</p>
+      <table style="border-collapse:collapse;margin:6px 0;font-size:13px;">
+        <tr style="background:#f5f5f5;"><td style="padding:6px 12px;border:1px solid #ddd;"><strong>Swift</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>Python</strong></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;"><code>private</code> → 编译时强制禁止外部访问</td><td style="padding:6px 12px;border:1px solid #ddd;"><code>_private</code> → 纯约定，不强制，Python 相信你"是懂事的开发者"</td></tr>
+      </table>
+      <p><strong>为什么 Python 这样设计？</strong>Python 哲学："We are all consenting adults"（我们都是成年人），靠自觉，不靠编译器强制。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="oop">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">15</span>
+    <span class="q-text"><code>__str__</code> 和 <code>__repr__</code> 是什么？有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-oop">面向对象</span></p>
+      <p>这两个方法控制对象"怎么被打印"。</p>
+      <pre>class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    
+    def __repr__(self):   # 给开发者看，要包含足够信息
+        return f"Point(x={self.x}, y={self.y})"
+    
+    def __str__(self):    # 给用户看，要简洁美观
+        return f"({self.x}, {self.y})"
+
+p = Point(3, 4)
+print(repr(p))  # → Point(x=3, y=4)
+print(str(p))   # → (3, 4)
+print(p)        # 默认调用 __str__</pre>
+      <p><strong>区别总结</strong>：</p>
+      <table style="border-collapse:collapse;margin:6px 0;font-size:13px;">
+        <tr style="background:#f5f5f5;"><td style="padding:6px 12px;border:1px solid #ddd;">&nbsp;</td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>__repr__</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>__str__</strong></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">目标用户</td><td style="padding:6px 12px;border:1px solid #ddd;">开发者</td><td style="padding:6px 12px;border:1px solid #ddd;">最终用户</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">调用时机</td><td style="padding:6px 12px;border:1px solid #ddd;"><code>repr(obj)</code>、调试器</td><td style="padding:6px 12px;border:1px solid #ddd;"><code>print(obj)</code>、<code>str(obj)</code></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">如果没有</td><td style="padding:6px 12px;border:1px solid #ddd;">显示 <code>&lt;__main__.Point object at 0x...&gt;</code></td><td style="padding:6px 12px;border:1px solid #ddd;">退回到 <code>__repr__</code></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">最佳实践</td><td style="padding:6px 12px;border:1px solid #ddd;">始终实现 __repr__</td><td style="padding:6px 12px;border:1px solid #ddd;">需要时再实现</td></tr>
+      </table>
+      <p><strong>Swift 对照</strong>：<code>__repr__</code> ≈ <code>CustomDebugStringConvertible</code>，<code>__str__</code> ≈ <code>CustomStringConvertible</code>。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="oop">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">16</span>
+    <span class="q-text">Python 如何实现继承？子类怎么调用父类方法？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-oop">面向对象</span></p>
+      <p><strong>继承语法</strong>：</p>
+      <pre>class Animal:
+    def __init__(self, name):
+        self.name = name
+    def speak(self):
+        return "..."
+
+class Dog(Animal):          # 括号里写父类
+    def speak(self):        # 重写（override）
+        return f"{self.name}: 汪汪!"
+
+class Cat(Animal):
+    def speak(self):
+        return f"{self.name}: 喵喵!"
+
+d = Dog("旺财")
+print(d.speak())  # → 旺财: 汪汪!</pre>
+      <p><strong>子类调用父类方法：</strong>用 <code>super()</code></p>
+      <pre>class Puppy(Dog):
+    def __init__(self, name, cuteness=10):
+        super().__init__(name)   # 调用父类的 __init__
+        self.cuteness = cuteness
+
+    def speak(self):
+        parent_sound = super().speak()  # 调用父类的 speak
+        return f"{parent_sound} (可爱度: {self.cuteness})"</pre>
+      <p><strong>和 Swift 的对比</strong>：</p>
+      <pre>// Swift
+class Dog: Animal {
+    override func speak() -> String {
+        return "汪汪!"
+    }
+}
+// 调用父类：super.speak()</pre>
+      <p>Python 用 <code>super()</code>，Swift 用 <code>super</code>，概念完全一样。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ -->
+<!-- 模块 3：LLMClient 封装 -->
+<!-- ════════════════════════════════ -->
+
+<div class="qa-card" data-cat="llm">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">17</span>
+    <span class="q-text">LLMClient 的 <code>chat()</code> 和 <code>stream_chat()</code> 有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-llm">LLMClient</span></p>
+      <table style="border-collapse:collapse;margin:6px 0;font-size:13px;">
+        <tr style="background:#f5f5f5;"><td style="padding:6px 12px;border:1px solid #ddd;"><strong>特性</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>chat()</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>stream_chat()</strong></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">返回方式</td><td style="padding:6px 12px;border:1px solid #ddd;">等全部生成完，一次性返回字符串</td><td style="padding:6px 12px;border:1px solid #ddd;">逐字返回（生成器，yield）</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">用户体验</td><td style="padding:6px 12px;border:1px solid #ddd;">AI 沉默一会儿，突然出现整段文字</td><td style="padding:6px 12px;border:1px solid #ddd;">打字机效果，一个字一个字出现</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">API 参数</td><td style="padding:6px 12px;border:1px solid #ddd;"><code>stream=False</code>（默认）</td><td style="padding:6px 12px;border:1px solid #ddd;"><code>stream=True</code></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">内部处理</td><td style="padding:6px 12px;border:1px solid #ddd;">一次 API 调用，拿到完整响应</td><td style="padding:6px 12px;border:1px solid #ddd;">API 返回多次 chunk，逐次处理</td></tr>
+      </table>
+      <pre># chat() - 同步一次性返回
+reply = client.chat("你好")
+print(reply)  # 等很久，然后一下子打印
+
+# stream_chat() - 流式逐字打印
+for chunk in client.stream_chat("你好"):
+    print(chunk, end="", flush=True)  # 打字机效果</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="llm">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">18</span>
+    <span class="q-text">LLMClient 的 <code>_history</code> 是干什么的？对话历史是怎么维护的？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-llm">LLMClient</span></p>
+      <p><code>_history</code> 是一个 <code>List[ChatMessage]</code>，按顺序存储所有消息：</p>
+      <pre># 初始化后（reset 后）
+_history = [
+    ChatMessage(role="system", content="你是一个有帮助的AI助手。")
+]
+# → history_length = 1
+
+# 用户说"你好"后
+_history = [
+    ChatMessage(role="system", content="你是一个有帮助的AI助手。"),
+    ChatMessage(role="user",   content="你好"),
+]
+# → history_length = 2
+
+# AI 回复后
+_history = [
+    ChatMessage(role="system", content="你是一个有帮助的AI助手。"),
+    ChatMessage(role="user",   content="你好"),
+    ChatMessage(role="assistant", content="你好！有什么可以帮你的？"),
+]
+# → history_length = 3</pre>
+      <p><strong>为什么需要历史？</strong>因为大模型本身<strong>没有记忆</strong>，每次调用都是独立的。要让 AI"记得"之前的对话，就得把<strong>全部历史</strong>都传给 API。</p>
+      <pre># API 调用时传入完整历史
+response = self._client.chat.completions.create(
+    messages=[m.to_dict() for m in self._history],  # ← 全部历史
+)</pre>
+      <p><code>reset()</code> 就是清空历史，只保留 system prompt，相当于"开启新对话"。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="llm">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">19</span>
+    <span class="q-text"><code>reset()</code> 和 <code>set_system()</code> 的区别是什么？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-llm">LLMClient</span></p>
+      <pre>def reset(self) -> None:
+    """重置对话历史，只保留系统提示"""
+    self._history = []
+    self._history.append(ChatMessage(role="system", content=self.system_prompt))
+
+def set_system(self, prompt: str) -> None:
+    """更换系统提示词并重置对话"""
+    self.system_prompt = prompt
+    self.reset()</pre>
+      <table style="border-collapse:collapse;margin:6px 0;font-size:13px;">
+        <tr style="background:#f5f5f5;"><td style="padding:6px 12px;border:1px solid #ddd;">&nbsp;</td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>reset()</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>set_system()</strong></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">做了什么</td><td style="padding:6px 12px;border:1px solid #ddd;">清空历史 + 用当前 system_prompt 重建</td><td style="padding:6px 12px;border:1px solid #ddd;">换 system_prompt + 调 reset()</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">最终历史</td><td style="padding:6px 12px;border:1px solid #ddd;">1 条（旧的 system）</td><td style="padding:6px 12px;border:1px solid #ddd;">1 条（新的 system）</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">适用场景</td><td style="padding:6px 12px;border:1px solid #ddd;">只清空对话，不改 AI 人设</td><td style="padding:6px 12px;border:1px solid #ddd;">换一种 AI 角色/风格</td></tr>
+      </table>
+      <p><strong>举个例</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li><code>reset()</code> → "我们重新聊"（人设不变）</li>
+        <li><code>set_system("你是一只猫")</code> → "从现在起你是一只猫"（换人设）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="llm">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">20</span>
+    <span class="q-text">CLI 中的 <code>if __name__ == "__main__":</code> 是什么？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-llm">LLMClient</span></p>
+      <pre>if __name__ == "__main__":
+    main()</pre>
+      <p>这行代码的作用是：<strong>只有直接运行这个文件时才执行 main()</strong>，如果被别的文件 import 则不执行。</p>
+      <pre># 情况 1：直接运行
+# python cli.py
+# → __name__ 等于 "__main__"
+# → 执行 main()
+
+# 情况 2：被导入
+# from cli import main
+# → __name__ 等于 "cli"（文件名）
+# → 不执行 main()</pre>
+      <p><strong>为什么需要？</strong>这样 cli.py 既可以作为脚本直接运行，也可以作为模块被其他代码 import（比如在测试中导入 <code>main</code> 函数）。</p>
+      <p>每个 Python 文件都有一个内置的 <code>__name__</code> 变量。当文件被直接执行时，Python 会把 <code>__name__</code> 设为 <code>"__main__"</code>。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="llm">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">21</span>
+    <span class="q-text">生成器（Generator）和 <code>yield</code> 是怎么工作的？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-llm">LLMClient</span></p>
+      <p><strong>生成器</strong>是一个"可以暂停和恢复"的函数。每次遇到 <code>yield</code>，函数会"冻结"当前状态，返回一个值，下次调用时从暂停处继续。</p>
+      <pre>def count_up_to(n):
+    i = 0
+    while i < n:
+        yield i      # 暂停，返回 i
+        i += 1       # 下次继续从这里执行
+
+# 使用
+for num in count_up_to(3):
+    print(num)
+# 输出: 0, 1, 2</pre>
+      <p><strong>stream_chat 中的实际应用</strong>：</p>
+      <pre>def stream_chat(self, user_input: str) -> Generator[str, None, None]:
+    # ... 调用 API 时设置 stream=True ...
+    full_reply = ""
+    for chunk in stream:         # API 逐个返回 chunk
+        delta = chunk.choices[0].delta.content
+        if delta:
+            full_reply += delta
+            yield delta           # 每收到一个字就返回给调用方
+    # 所有 chunk 处理完后，把完整回复加入历史
+    self._history.append(...)</pre>
+      <p><strong>和普通函数的区别</strong>：</p>
+      <table style="border-collapse:collapse;margin:6px 0;font-size:13px;">
+        <tr style="background:#f5f5f5;"><td style="padding:6px 12px;border:1px solid #ddd;">&nbsp;</td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>return</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>yield</strong></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">行为</td><td style="padding:6px 12px;border:1px solid #ddd;">函数结束，释放所有状态</td><td style="padding:6px 12px;border:1px solid #ddd;">函数暂停，保留状态</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">再次调用</td><td style="padding:6px 12px;border:1px solid #ddd;">从头开始</td><td style="padding:6px 12px;border:1px solid #ddd;">从暂停处继续</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">返回值</td><td style="padding:6px 12px;border:1px solid #ddd;">一次性返回最终值</td><td style="padding:6px 12px;border:1px solid #ddd;">每次返回一个值，支持迭代</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ -->
+<!-- 模块 4：pytest 测试 -->
+<!-- ════════════════════════════════ -->
+
+<div class="qa-card" data-cat="test">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">22</span>
+    <span class="q-text">pytest 的基本规则是什么？怎么命名测试函数？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-test">pytest</span></p>
+      <p>pytest 靠<strong>命名规则</strong>自动发现测试：</p>
+      <table style="border-collapse:collapse;margin:6px 0;font-size:13px;">
+        <tr style="background:#f5f5f5;"><td style="padding:6px 12px;border:1px solid #ddd;"><strong>规则</strong></td><td style="padding:6px 12px;border:1px solid #ddd;"><strong>说明</strong></td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">文件名</td><td style="padding:6px 12px;border:1px solid #ddd;">以 <code>test_</code> 开头 或 以 <code>_test</code> 结尾</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">函数名</td><td style="padding:6px 12px;border:1px solid #ddd;">以 <code>test_</code> 开头</td></tr>
+        <tr><td style="padding:6px 12px;border:1px solid #ddd;">类名</td><td style="padding:6px 12px;border:1px solid #ddd;">以 <code>Test</code> 开头（类里的方法以 test_ 开头）</td></tr>
+      </table>
+      <p><strong>命名不对会怎样？</strong>pytest <strong>直接忽略</strong>，不会报错，连收集都收集不到：</p>
+      <pre>def tes_chat_message_to_dict():   # ❌ 少写了一个 t，不是 test_
+    ...
+# pytest 完全看不见这个函数，写了等于白写</pre>
+      <p><strong>运行方式</strong>：</p>
+      <pre>pytest test_llm_client.py          # 运行指定文件
+pytest test_llm_client.py -v       # -v 详细输出
+pytest test_llm_client.py -k "mock"  # 只运行名字包含 mock 的用例
+pytest .                           # 递归发现所有测试</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="test">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">23</span>
+    <span class="q-text"><code>assert</code> 在测试中怎么用？和 Python 的 assert 有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-test">pytest</span></p>
+      <p><strong>没有区别</strong>！就是同一个 <code>assert</code> 关键字。</p>
+      <pre># 语法
+assert 条件
+assert 条件, "出错时显示的消息"</pre>
+      <p><strong>逻辑</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>条件为 <code>True</code> → 什么都不发生，测试通过 ✅</li>
+        <li>条件为 <code>False</code> → 抛出 <code>AssertionError</code>，测试失败 ❌</li>
+      </ul>
+      <pre>def test_something():
+    result = my_function()
+    assert result == 42           # 断言结果等于 42
+    assert len(result) > 0        # 断言长度大于 0
+    assert "error" not in result  # 断言不含 "error"</pre>
+      <p><strong>pytest 的增强</strong>：pytest 重写了 assert 的错误信息，让它更智能：</p>
+      <pre>assert client.history_length == 2
+# 如果失败，pytest 会显示：
+# AssertionError: assert 3 == 2
+#   + where 3 = LLMClient(...).history_length
+# 直接告诉你：实际值是 3，期望是 2，而且展示了属性路径</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="test">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">24</span>
+    <span class="q-text">Mock 是什么？为什么测试 LLMClient 需要它？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-test">pytest</span></p>
+      <p><strong>Mock（模拟对象）</strong>是一个"假的对象"，可以代替真实对象，让你控制它的行为。</p>
+      <p><strong>为什么需要 Mock？</strong></p>
+      <pre># 测试 chat() 时如果不 mock：
+client = LLMClient()
+client.chat("你好")
+# → 真的去调 API 了！
+# → 需要网络、需要 API key、可能花钱、依赖外部服务</pre>
+      <p><strong>用 Mock 后</strong>：</p>
+      <pre>def test_chat_with_mock(mocker):
+    client = LLMClient()
+
+    # 1. 创建一个假的 API 响应
+    mock_response = mocker.Mock()
+    mock_response.choices = [mocker.Mock()]
+    mock_response.choices[0].message.content = "mocked reply"
+
+    # 2. 把真正的 API 调用替换成假的
+    mocker.patch.object(
+        client._client.chat.completions,
+        "create",
+        return_value=mock_response
+    )
+
+    # 3. 现在调用 chat() 不会真的调 API，而是返回 mock_response
+    reply = client.chat("你好")
+    assert reply == "mocked reply"  # ✅ 测试 chat() 的逻辑
+    assert client.history_length == 3  # ✅ 测试历史管理</pre>
+      <p><strong>Mock 的好处</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>不需要网络、API key、费用</li>
+        <li>速度快（毫秒级）</li>
+        <li>稳定（不依赖外部服务状态）</li>
+        <li>可以模拟各种极端情况（超时、报错、空回复等）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="test">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">25</span>
+    <span class="q-text"><code>mocker.patch.object()</code> 是做什么的？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-test">pytest</span></p>
+      <p><code>mocker.patch.object()</code> 把<strong>真实对象的某个方法临时替换成假的</strong>。</p>
+      <pre>mocker.patch.object(
+    client._client.chat.completions,  # 目标对象
+    "create",                         # 要替换的方法名
+    return_value=mock_response        # 替换后的返回值
+)
+
+# 替换前：client._client.chat.completions.create(...) → 调真实 API
+# 替换后：client._client.chat.completions.create(...) → 返回 mock_response</pre>
+      <p><strong>其他变体</strong>：</p>
+      <pre># 替换模块里的一个函数
+mocker.patch("os.getenv", return_value="fake_key")
+
+# 替换整个类
+mocker.patch("openai.OpenAI")
+
+# 让 mock 在被调用时执行特定函数
+mocker.patch.object(obj, "method", side_effect=my_func)</pre>
+      <p><strong>重要</strong>：替换只在当前测试函数内生效，测试结束后自动恢复。不会影响其他测试。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="test">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">26</span>
+    <span class="q-text">Mock 如何模拟 API 响应？<code>response.choices[0].message.content</code> 这个结构怎么来的？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-test">pytest</span></p>
+      <p>这个结构来自 OpenAI API 的响应格式：</p>
+      <pre># 真实的 API 响应结构（简化版）
+{
+    "choices": [
+        {
+            "message": {
+                "content": "这是AI的回复",
+                "role": "assistant"
+            }
+        }
+    ]
+}
+
+# 在 Python SDK 中通过对象属性访问
+response.choices[0].message.content</pre>
+      <p><strong>Mock 模拟的写法</strong>：</p>
+      <pre># 创建最外层的 Mock 对象
+mock_response = mocker.Mock()
+
+# 模拟 choices[0]：choices 是一个列表
+mock_response.choices = [mocker.Mock()]
+
+# 模拟 choices[0].message.content
+mock_response.choices[0].message.content = "mocked reply"
+
+# 现在 mock_response 的结构和真实响应一样
+# chat() 方法中 response.choices[0].message.content 就能拿到 "mocked reply"</pre>
+      <p><strong>为什么能这样模拟？</strong>因为 Mock 对象有个特点：<strong>访问任何属性都不会报错</strong>，而是自动创建子 Mock。</p>
+      <pre>mock = mocker.Mock()
+mock.a.b.c.d  # ✅ 不会报错，自动创建链式 Mock
+mock.a.b.c.d = "hello"  # ⭐ 再赋值即可</pre>
+    </div>
+  </div>
+</div>
+
+<div class="stats">
+  📚 共 26 个问答 · Day 2 · Python 函数进阶 + 面向对象 + LLMClient + pytest
+</div>
+
+</div>
+
+<script>
+function toggleCard(header) {
+  const card = header.parentElement;
+  const wasOpen = card.classList.contains('open');
+  // 关闭所有
+  document.querySelectorAll('.qa-card.open').forEach(c => c.classList.remove('open'));
+  // 如果原来没打开，就打开它
+  if (!wasOpen) card.classList.add('open');
+}
+
+function filterByCat(cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  document.querySelectorAll('.qa-card').forEach(card => {
+    card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+  });
+}
+
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.qa-card').forEach(card => {
+    const text = card.querySelector('.q-text').textContent.toLowerCase();
+    const answer = card.querySelector('.qa-answer').textContent.toLowerCase();
+    const match = text.includes(q) || answer.includes(q);
+    card.style.display = match ? '' : 'none';
+  });
+}
+</script>
+
+</body>
+</html>

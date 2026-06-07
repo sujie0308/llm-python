@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 3 知识点问答 - 异步编程 + 类型标注 + 装饰器</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; background: #f0f2f5; color: #1a1a2e; padding: 20px; }
+.page { max-width: 860px; margin: 0 auto; }
+.header { background: linear-gradient(135deg, #1b4332, #2d6a4f, #40916c); color: #fff; padding: 28px 36px; border-radius: 14px 14px 0 0; }
+.header h1 { font-size: 24px; margin-bottom: 6px; }
+.header .sub { opacity: 0.8; font-size: 14px; }
+.category-bar { display: flex; gap: 8px; padding: 16px 0; flex-wrap: wrap; }
+.cat-btn { padding: 6px 16px; border: 2px solid #ddd; border-radius: 20px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+.cat-btn:hover { border-color: #2d6a4f; }
+.cat-btn.active { background: #2d6a4f; color: #fff; border-color: #2d6a4f; }
+.search-box { padding: 12px 0; }
+.search-box input { width: 100%; padding: 10px 16px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+.search-box input:focus { border-color: #2d6a4f; }
+.qa-card { background: #fff; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; transition: box-shadow 0.2s; }
+.qa-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+.qa-question { padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; user-select: none; }
+.qa-question .q-icon { background: #2d6a4f; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+.qa-question .q-text { flex: 1; font-size: 15px; font-weight: 600; line-height: 1.5; }
+.qa-question .q-toggle { font-size: 18px; color: #999; transition: transform 0.3s; flex-shrink: 0; }
+.qa-card.open .q-toggle { transform: rotate(180deg); }
+.qa-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease; padding: 0 20px; }
+.qa-card.open .qa-answer { max-height: 2500px; padding: 0 20px 20px 20px; }
+.qa-answer .a-body { font-size: 14px; line-height: 1.8; color: #333; }
+.qa-answer .a-body p { margin: 6px 0; }
+.qa-answer .a-body strong { color: #1b4332; }
+.qa-answer .a-body code { background: #f5f5f5; padding: 1px 6px; border-radius: 4px; font-family: "Cascadia Code", "Fira Code", monospace; font-size: 13px; color: #c62828; }
+.qa-answer .a-body pre { background: #1e1e2e; color: #cdd6f4; padding: 12px 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 8px 0; font-family: "Cascadia Code", monospace; }
+.qa-answer .a-body table.cmp { width: 100%; font-size: 12px; margin: 8px 0; border-collapse: collapse; }
+.qa-answer .a-body table.cmp th { background: #d8f3dc; padding: 6px 10px; text-align: left; border: 1px solid #b7e4c7; }
+.qa-answer .a-body table.cmp td { padding: 5px 10px; border: 1px solid #ddd; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+.tag-async { background: #d8f3dc; color: #1b4332; }
+.tag-type { background: #fff3e0; color: #e65100; }
+.tag-deco { background: #f3e5f5; color: #6a1b9a; }
+.stats { text-align: center; padding: 20px; color: #666; font-size: 13px; }
+@media (max-width: 600px) {
+  body { padding: 10px; }
+  .header { padding: 20px; }
+  .qa-question { padding: 14px 16px; }
+  .qa-question .q-text { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<div class="header">
+  <h1>📘 Day 3 知识点问答</h1>
+  <div class="sub">异步编程 async/await · 类型标注 Type Hints · 装饰器原理</div>
+</div>
+
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="🔍 搜索问题..." oninput="filterCards()">
+</div>
+
+<div class="category-bar" id="categoryBar">
+  <button class="cat-btn active" data-cat="all" onclick="filterByCat('all')">全部</button>
+  <button class="cat-btn" data-cat="async" onclick="filterByCat('async')">异步编程</button>
+  <button class="cat-btn" data-cat="type" onclick="filterByCat('type')">类型标注</button>
+  <button class="cat-btn" data-cat="deco" onclick="filterByCat('deco')">装饰器</button>
+  <button class="cat-btn" data-cat="practice" onclick="filterByCat('practice')">实战</button>
+</div>
+
+<!-- ════════════════════════════════ -->
+<!-- 模块 1：异步编程 async/await -->
+<!-- ════════════════════════════════ -->
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">1</span>
+    <span class="q-text">同步（Synchronous）和异步（Asynchronous）的本质区别是什么？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p><strong>核心区别：阻塞 vs 不阻塞</strong></p>
+      <p><strong>同步</strong>：做完一件事再做下一件事。如果某一步在等待（比如等 API 响应），整个程序就停在那里干等。</p>
+      <pre># 同步：一次一个，顺序执行
+print("开始")
+response = requests.get("https://api.example.com")  # 卡在这里等 2 秒
+print("结束")  # 2 秒后才执行</pre>
+      <p><strong>异步</strong>：在等待的时候去做别的事。就像一边烧水一边切菜——不浪费等待时间。</p>
+      <pre># 异步：遇到等待就切换任务
+async def main():
+    print("开始")
+    response = await client.get("https://api.example.com")  # 不阻塞，去干别的
+    print("结束")  # 等数据回来再继续
+
+asyncio.run(main())</pre>
+      <p><strong>类比生活</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li><strong>同步</strong>：去银行排队，在窗口前等到办完才能走</li>
+        <li><strong>异步</strong>：取号后去旁边坐着玩手机，叫到号才过去</li>
+      </ul>
+      <p><strong>对于 LLM 调用</strong>：API 请求大部分时间花在网络传输上（IO 等待），异步可以让 CPU 在等待期间处理其他请求，从而大幅提升并发能力。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">2</span>
+    <span class="q-text">事件循环（Event Loop）是什么？它怎么工作？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p><strong>事件循环</strong>是 Python 异步编程的核心引擎。它是一个<strong>无限循环</strong>，不断做两件事：</p>
+      <ol style="margin:4px 0 0 20px;">
+        <li>检查有没有"可以继续执行"的协程</li>
+        <li>如果有，就让它执行一段；如果没有，就等一会儿再检查</li>
+      </ol>
+      <pre># 事件循环的简化理解
+tasks = [task1, task2, task3]  # 待执行的协程列表
+
+while True:  # 事件循环
+    for task in tasks:
+        if task.is_ready():      # 这个任务可以继续了吗？
+            task.run_one_step()  # 让它执行一步（直到下一个 await）
+        # 如果不可执行（还在等 IO），就跳过，检查下一个</pre>
+      <p><strong>关键理解</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>事件循环运行在<strong>单线程</strong>上</li>
+        <li>它不靠多线程/多进程，而是靠"调度"——在任务之间快速切换</li>
+        <li>切换发生的时机：遇到 <code>await</code> 时（即 IO 等待时）</li>
+        <li>因为切换成本极低（比线程切换低得多），所以能高效处理大量并发</li>
+      </ul>
+      <p><strong>启动事件循环</strong>：<code>asyncio.run(main())</code> ← 一切的入口。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">3</span>
+    <span class="q-text"><code>async def</code> 和 <code>await</code> 分别是什么？怎么用？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p><strong><code>async def</code></strong>：定义一个协程函数（coroutine function）。调用它不会立即执行，而是返回一个<strong>协程对象</strong>。</p>
+      <pre>async def fetch_data():
+    # 这是一个协程函数
+    return "数据"
+
+coro = fetch_data()  # ⚠️ 还没有执行！只是创建了一个协程对象
+# 必须 await 或用 asyncio.run 才能执行</pre>
+      <p><strong><code>await</code></strong>：等待一个协程完成，<strong>不阻塞线程</strong>。遇到 <code>await</code> 时，事件循环可以切换到其他任务。</p>
+      <pre>async def main():
+    # await 会暂停当前协程，但不阻塞整个程序
+    result = await fetch_data()  # 等 fetch_data 完成
+    print(result)  # → "数据"
+
+asyncio.run(main())</pre>
+      <p><strong>await 的规则</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li><code>await</code> 只能用在 <code>async def</code> 内部</li>
+        <li><code>await</code> 后面只能跟"可等待对象"（coroutine、Task、Future）</li>
+        <li>普通函数里不能写 <code>await</code> → SyntaxError</li>
+      </ul>
+      <p><strong>和 Swift 的对比</strong>：完全一样——Swift 的 <code>async func</code> 对应 <code>async def</code>，<code>try await</code> 对应 <code>await</code>。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">4</span>
+    <span class="q-text"><code>asyncio.run()</code> 是做什么的？为什么需要它？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p><code>asyncio.run()</code> 是<strong>启动事件循环的入口函数</strong>。</p>
+      <pre>import asyncio
+
+async def hello():
+    return "Hello, Async!"
+
+# ❌ 不能直接调用协程函数
+result = hello()  # 返回一个协程对象，不是字符串
+
+# ✅ 必须用 asyncio.run() 来运行
+result = asyncio.run(hello())  # → "Hello, Async!"</pre>
+      <p><strong>它做了什么事？</strong></p>
+      <ol style="margin:4px 0 0 20px;">
+        <li>创建新的事件循环</li>
+        <li>把传入的协程加入事件循环并执行</li>
+        <li>等待协程完成，返回结果</li>
+        <li>关闭事件循环</li>
+      </ol>
+      <p><strong>重要规则</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>一个线程里只能有一个事件循环</li>
+        <li><code>asyncio.run()</code> 不能被嵌套调用</li>
+        <li>通常只写一次 <code>asyncio.run(main())</code> 作为程序的入口</li>
+      </ul>
+      <pre># ✅ 正确写法
+async def main():
+    ...
+asyncio.run(main())
+
+# ❌ 错误写法
+asyncio.run(asyncio.run(other()))  # 嵌套调用会报错</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">5</span>
+    <span class="q-text"><code>asyncio.gather()</code> 是什么？它怎么让多个 LLM 请求并发执行？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p><code>asyncio.gather()</code> 并发执行多个协程，等待所有完成，返回结果列表。</p>
+      <pre>import asyncio
+
+async def fetch_data(id: int) -> str:
+    await asyncio.sleep(1)  # 模拟 API 调用
+    return f"数据 {id}"
+
+async def main():
+    # 串行执行：3 个请求要 3 秒
+    # r1 = await fetch_data(1)
+    # r2 = await fetch_data(2)
+    # r3 = await fetch_data(3)
+
+    # 并发执行：3 个请求只要 1 秒
+    results = await asyncio.gather(
+        fetch_data(1),
+        fetch_data(2),
+        fetch_data(3),
+    )
+    print(results)  # → ['数据 1', '数据 2', '数据 3']
+
+asyncio.run(main())</pre>
+      <p><strong>在 LLM 场景中的威力</strong>：</p>
+      <pre># 同步：10 个请求 → 10 * 平均响应时间（假设 3 秒）= 30 秒
+responses = [sync_call(p) for p in prompts]
+
+# 异步：10 个请求 → 最快 ≈ 3 秒（最慢的那个响应时间）
+results = await asyncio.gather(*[async_call(p) for p in prompts])</pre>
+      <p><strong>gather 的细节</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li><code>*[coro1, coro2, ...]</code> 解包列表为多个参数</li>
+        <li>如果某个协程抛出异常，gather 默认会立刻抛出（不会等其他的）</li>
+        <li>可以用 <code>return_exceptions=True</code> 让 gather 返回异常对象而非抛出</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">6</span>
+    <span class="q-text"><code>asyncio.create_task()</code> 和 <code>gather()</code> 有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p><strong><code>create_task()</code></strong>：把协程包装成 Task，<strong>立即开始后台执行</strong>，不等待结果。</p>
+      <pre>async def background_work():
+    await asyncio.sleep(5)
+    print("后台任务完成")
+
+async def main():
+    # 创建后台任务，立刻开始执行
+    task = asyncio.create_task(background_work())
+    print("主任务继续...")
+    await asyncio.sleep(1)
+    print("主任务结束")
+    # 如果主任务结束前想等后台任务完成
+    await task
+
+asyncio.run(main())</pre>
+      <table class="cmp">
+        <tr><th>&nbsp;</th><th><strong>gather()</strong></th><th><strong>create_task()</strong></th></tr>
+        <tr><td>用途</td><td>并发执行一批协程，等全部完成</td><td>把协程丢到后台运行，不阻塞当前</td></tr>
+        <tr><td>返回值</td><td>所有结果组成的列表</td><td>Task 对象</td></tr>
+        <tr><td>典型场景</td><td>同时发 N 个 API 请求</td><td>后台日志、监控、定时任务</td></tr>
+        <tr><td>等待方式</td><td><code>await gather(...)</code></td><td><code>await task</code></td></tr>
+      </table>
+      <p><strong>实际关系</strong>：<code>gather()</code> 内部也会创建 Task，可以理解为 gather 是 "create_task + 统一 await" 的快捷方式。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">7</span>
+    <span class="q-text"><code>async with</code> 和 <code>async for</code> 是什么？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p><strong><code>async with</code></strong>：异步上下文管理器（类似同步的 <code>with</code>，但进入和退出都是异步的）。</p>
+      <pre># 同步 with
+with open("file.txt") as f:
+    data = f.read()
+
+# 异步 async with（用于异步资源，如 HTTP 客户端、数据库连接）
+async with httpx.AsyncClient() as client:
+    resp = await client.get("https://example.com")
+
+# AsyncOpenAI 也是用 async with
+client = AsyncOpenAI(...)  # 或者用 async with</pre>
+      <p><strong><code>async for</code></strong>：异步迭代器（每次迭代都可能需要等待）。</p>
+      <pre># 异步流式读取 LLM 回复
+async for chunk in stream:
+    print(chunk, end="", flush=True)
+
+# 等价于同步的：
+# for chunk in stream:
+#     print(chunk, end="")
+
+# 区别：async for 的每一步内部可能 await 等待数据到达</pre>
+      <p><strong>记忆方法</strong>：在同步版本前加 <code>async</code> 就是异步版本——<code>with</code> → <code>async with</code>，<code>for</code> → <code>async for</code>。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">8</span>
+    <span class="q-text">为什么 LLM 调用必须用异步而非多线程？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p><strong>一句话答案</strong>：LLM API 调用是 <strong>IO 密集型任务</strong>（绝大多数时间花在网络传输上），不是 CPU 密集型。</p>
+      <table class="cmp">
+        <tr><th>&nbsp;</th><th><strong>多线程</strong></th><th><strong>异步 async/await</strong></th></tr>
+        <tr><td>并发单位</td><td>操作系统线程</td><td>协程（用户态）</td></tr>
+        <tr><td>切换成本</td><td>高（内核态切换，~1μs）</td><td>极低（用户态切换，~0.01μs）</td></tr>
+        <tr><td>内存开销</td><td>每个线程 ~8MB 栈</td><td>每个协程 ~几 KB</td></tr>
+        <tr><td>适合场景</td><td>CPU 密集型（视频渲染、计算）</td><td>IO 密集型（网络请求、数据库）</td></tr>
+        <tr><td>Python 的 GIL</td><td>受 GIL 限制，不能真正并行 CPU 任务</td><td>不受 GIL 影响</td></tr>
+      </table>
+      <p><strong>具体到 LLM 调用</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>一次 API 调用：99% 时间在等网络，1% 时间在处理数据</li>
+        <li>同步 10 次调用：10 * 3 秒 = 30 秒</li>
+        <li>多线程 10 次调用：接近 3 秒（但线程开销大，创建 1000 个线程会压垮系统）</li>
+        <li>异步 10 次调用：接近 3 秒（创建 10000 个协程也轻松）</li>
+      </ul>
+      <p>所以异步是 IO 密集型任务的最优解——<strong>低成本、高并发、不阻塞</strong>。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">9</span>
+    <span class="q-text"><code>AsyncOpenAI</code> 和 <code>OpenAI</code> 客户端有什么区别？异步版怎么用？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p>openai 库提供了两个客户端：</p>
+      <table class="cmp">
+        <tr><th>&nbsp;</th><th><strong>OpenAI</strong></th><th><strong>AsyncOpenAI</strong></th></tr>
+        <tr><td>同步/异步</td><td>同步（阻塞）</td><td>异步（非阻塞）</td></tr>
+        <tr><td>调用方式</td><td><code>client.chat...create()</code></td><td><code>await client.chat...create()</code></td></tr>
+        <tr><td>适用场景</td><td>脚本、CLI 工具</td><td>Web 服务、并发高场景</td></tr>
+      </table>
+      <pre># 同步版
+from openai import OpenAI
+client = OpenAI(api_key="...", base_url="...")
+resp = client.chat.completions.create(model=..., messages=[...])
+
+# 异步版
+from openai import AsyncOpenAI
+client = AsyncOpenAI(api_key="...", base_url="...")
+resp = await client.chat.completions.create(model=..., messages=[...])</pre>
+      <p><strong>流式调用对比</strong>：</p>
+      <pre># 同步流式
+stream = client.chat.completions.create(..., stream=True)
+for chunk in stream:    # 普通 for 循环
+    ...
+
+# 异步流式
+stream = await client.chat.completions.create(..., stream=True)
+async for chunk in stream:  # 异步 async for
+    ...</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="async">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">10</span>
+    <span class="q-text">Python 异步和 Swift Concurrency（async/await）有哪些对应关系？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-async">异步编程</span></p>
+      <p><strong>概念对照表</strong>：</p>
+      <table class="cmp">
+        <tr><th>概念</th><th>Swift</th><th>Python</th></tr>
+        <tr><td>定义异步函数</td><td><code>func fetch() async -> String</code></td><td><code>async def fetch() -> str</code></td></tr>
+        <tr><td>等待完成</td><td><code>let r = try await fetch()</code></td><td><code>r = await fetch()</code></td></tr>
+        <tr><td>调用入口</td><td><code>Task { ... }</code></td><td><code>asyncio.run(...)</code></td></tr>
+        <tr><td>并发执行</td><td><code>async let a = f1(); async let b = f2()</code></td><td><code>asyncio.gather(f1(), f2())</code></td></tr>
+        <tr><td>后台任务</td><td><code>Task.detached { ... }</code></td><td><code>asyncio.create_task(...)</code></td></tr>
+        <tr><td>异步序列</td><td><code>AsyncSequence</code> / <code>for try await</code></td><td><code>async for</code></td></tr>
+        <tr><td>异步 Context</td><td>无直接对应</td><td><code>async with</code></td></tr>
+        <tr><td>取消</td><td><code>Task.isCancelled</code></td><td><code>asyncio.Task.cancelled()</code></td></tr>
+      </table>
+      <p><strong>关键区别</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>Swift 的 async/await 是<strong>语言内置</strong>的，Python 是<strong>库级实现</strong>（asyncio）</li>
+        <li>Swift 用 <code>try await</code>（错误处理内置），Python 用 <code>await</code>（try/except 自己包）</li>
+        <li>语法和思想上非常相似，从 Swift 转过来适应很快</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════ -->
+<!-- 模块 2：类型标注 Type Hints -->
+<!-- ════════════════════════════════ -->
+
+<div class="qa-card" data-cat="type">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">11</span>
+    <span class="q-text">Python 类型标注（Type Hints）是什么？有什么用？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-type">类型标注</span></p>
+      <p>类型标注是 Python 3.5+ 引入的可选语法，用来<strong>标记变量、参数、返回值的类型</strong>。</p>
+      <pre># 不加类型标注
+def add(x, y):
+    return x + y
+
+# 加类型标注
+def add(x: int, y: int) -> int:
+    return x + y</pre>
+      <p><strong>有什么用</strong>：</p>
+      <ol style="margin:4px 0 0 20px;">
+        <li><strong>IDE 智能补全</strong>：Trae 知道变量类型后，会给出精确的代码提示</li>
+        <li><strong>静态检查</strong>：用 <code>mypy</code> 可以在运行前发现类型错误</li>
+        <li><strong>代码即文档</strong>：别⼈一看函数签名就知道怎么用</li>
+        <li><strong>减少 bug</strong>：很多隐式类型错误在写代码时就被发现</li>
+      </ol>
+      <p><strong>重要</strong>：类型标注是<strong>可选</strong>的，Python 运行时<strong>不强制</strong>检查类型。它主要用于开发工具和静态检查器。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="type">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">12</span>
+    <span class="q-text">Python 3.9+ 的类型标注怎么写？<code>list[int]</code> 和 <code>List[int]</code> 有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-type">类型标注</span></p>
+      <p>Python 3.9+ 可以直接用<strong>内置类型作为泛型</strong>，不需要从 typing 导入：</p>
+      <pre># Python 3.9+（推荐写法）
+nums: list[int] = [1, 2, 3]
+mapping: dict[str, int] = {"a": 1}
+pair: tuple[str, int] = ("a", 1)
+items: set[str] = {"a", "b"}
+
+# Python 3.8 及以前（需要从 typing 导入）
+from typing import List, Dict, Tuple, Set
+nums: List[int] = [1, 2, 3]
+mapping: Dict[str, int] = {"a": 1}
+pair: Tuple[str, int] = ("a", 1)
+items: Set[str] = {"a", "b"}</pre>
+      <p><strong>区别</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li><code>list[int]</code>（小写）— Python 3.9+ 内置，不需要 import</li>
+        <li><code>List[int]</code>（大写）— 旧式写法，需要 from typing import List</li>
+        <li>功能完全一样，推荐用新的小写写法</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="type">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">13</span>
+    <span class="q-text"><code>Optional</code>、<code>Union</code>、<code>Literal</code> 分别是什么？怎么用？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-type">类型标注</span></p>
+      <p><strong><code>Optional[X]</code></strong>：表示值可以是 X 类型或 None（等价于 <code>X | None</code>）。</p>
+      <pre>from typing import Optional
+
+name: Optional[str] = None  # 可能是 str 或 None
+# Python 3.10+ 也可写：name: str | None = None
+
+def find_user(id: int) -> Optional[dict]:
+    if id == 1:
+        return {"name": "小明"}
+    return None  # 可能返回 None</pre>
+      <p><strong><code>Union[X, Y]</code></strong>：表示值可以是 X 或 Y 类型（等价于 <code>X | Y</code>）。</p>
+      <pre>from typing import Union
+
+value: Union[int, str] = 1    # 可以是 int 或 str
+value = "hello"               # 也是合法的
+
+# Python 3.10+ 也可写：value: int | str = 1</pre>
+      <p><strong><code>Literal["a", "b"]</code></strong>：表示值只能是指定的<strong>字面量值</strong>之一。AI 库中大量使用！</p>
+      <pre>from typing import Literal
+
+role: Literal["user", "assistant", "system"] = "user"
+role = "student"  # ❌ mypy 会报错（必须是 "user"/"assistant"/"system" 之一）
+
+# 在 LLMClient 中的实际应用
+Role = Literal["user", "assistant", "system"]
+
+@dataclass
+class ChatMessage:
+    role: Role       # 只能是这三个值之一
+    content: str</pre>
+      <p><strong>联合类型的新语法（3.10+）</strong>：</p>
+      <pre># 旧
+x: Optional[int] = None
+y: Union[int, str] = 1
+
+# 新（更简洁）
+x: int | None = None
+y: int | str = 1</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="type">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">14</span>
+    <span class="q-text"><code>Callable</code> 和 <code>TypedDict</code> 是什么？怎么用？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-type">类型标注</span></p>
+      <p><strong><code>Callable[[参数类型], 返回类型]</code></strong>：标注函数的类型。</p>
+      <pre>from typing import Callable
+
+# 定义一个"接收两个 int 返回 bool"的函数类型
+handler: Callable[[int, int], bool] = lambda x, y: x > y
+
+# 在函数参数中使用
+def apply(func: Callable[[int], int], value: int) -> int:
+    return func(value)
+
+apply(lambda x: x * 2, 5)  # → 10</pre>
+      <p><strong><code>TypedDict</code></strong>：给字典定义结构化的类型（像 Swift 的 struct 但用字典表示）。</p>
+      <pre>from typing import TypedDict
+
+class Message(TypedDict):
+    role: str
+    content: str
+
+# 使用 TypedDict
+msg: Message = {"role": "user", "content": "你好"}
+msg["role"]         # 可访问
+msg["invalid"]      # ❌ mypy 报错：extra key 'invalid'
+
+# 相比普通 dict 的好处：IDE 能补全 key，mypy 能检查 key 是否存在
+normal_dict: dict = {"role": "user"}
+normal_dict["xxx"]  # ✅ 不报错（运行时才能发现）</pre>
+      <p><strong>Callable 和 Swift 对比</strong>：</p>
+      <pre># Swift: typealias Handler = (Int, Int) -> Bool
+# Python: handler: Callable[[int, int], bool]</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="type">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">15</span>
+    <span class="q-text"><code>mypy</code> 是什么？怎么用它对 Python 代码做静态类型检查？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-type">类型标注</span></p>
+      <p><strong>mypy</strong> 是 Python 的静态类型检查器，相当于 Swift 的编译器类型检查。</p>
+      <p><strong>安装</strong>：</p>
+      <pre>pip install mypy</pre>
+      <p><strong>使用</strong>：</p>
+      <pre># 检查单个文件
+mypy my_script.py
+
+# 检查整个目录
+mypy my_package/
+
+# 忽略 import 错误
+mypy --ignore-missing-imports my_script.py
+
+# 严格模式
+mypy --strict my_script.py</pre>
+      <p><strong>实际效果</strong>：</p>
+      <pre># file: demo.py
+def greet(name: str) -> str:
+    return name + 1  # ❌ str + int，类型错误
+
+age: int = "twenty"  # ❌ str 赋值给 int，类型错误
+
+# 运行 mypy demo.py 会输出：
+# demo.py:2: error: Unsupported operand type(s) for +: "str" and "int"
+# demo.py:4: error: Incompatible types in assignment (expression has type "str", variable has type "int")</pre>
+      <p><strong>和 Swift 的对比</strong>：Swift 编译器在你写代码时就做类型检查（实时），Python 需要手动运行 <code>mypy</code>。不过 Trae IDE 内置了 Pylance，也能实时显示类型错误。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="type">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">16</span>
+    <span class="q-text"><code>Any</code> 是什么？什么时候该用它？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-type">类型标注</span></p>
+      <p><code>Any</code> 表示"任意类型"。当变量标注为 <code>Any</code> 时，mypy 不会对它做任何类型检查。</p>
+      <pre>from typing import Any
+
+value: Any = 1
+value = "hello"       # ✅ 任何赋值都可以
+value.some_method()   # ✅ mypy 不会报错（运行时可能崩溃）
+
+# ❌ 不推荐这样用，等于放弃了类型检查的好处
+# ✅ 只在以下情况用：
+# 1. 和动态类型库交互（如某些 JSON 解析）
+# 2. 迁移旧代码时临时过渡
+# 3. 确实无法确定类型的情况</pre>
+      <p><strong>最佳实践</strong>：尽量少用 <code>Any</code>。能用 <code>Union</code> 或 <code>Optional</code> 代替就用。每多一个 <code>Any</code>，就多一份运行时崩溃的风险。</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════ -->
+<!-- 模块 3：装饰器 -->
+<!-- ════════════════════════════════ -->
+
+<div class="qa-card" data-cat="deco">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">17</span>
+    <span class="q-text">Python 装饰器的本质是什么？它和闭包是什么关系？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">装饰器</span></p>
+      <p><strong>装饰器的本质</strong>：就是一个<strong>接收函数、返回新函数</strong>的<strong>高阶函数</strong>。</p>
+      <pre># 装饰器 = 接收函数，返回新函数
+def decorator(func):
+    def wrapper(*args, **kwargs):
+        # 在调用原函数前/后做点额外的事
+        result = func(*args, **kwargs)
+        return result
+    return wrapper
+
+# @ 语法糖
+@decorator
+def my_func():
+    pass
+
+# 等价于
+my_func = decorator(my_func)</pre>
+      <p><strong>和闭包的关系</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li><strong>闭包</strong>：内部函数引用外部函数的变量——一种编程机制</li>
+        <li><strong>装饰器</strong>：用闭包包装另一个函数的模式——闭包的典型应用</li>
+        <li>装饰器中的 <code>wrapper</code> 函数就是一个<strong>闭包</strong>（它引用了外部的 <code>func</code> 变量）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="deco">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">18</span>
+    <span class="q-text">怎么徒手写一个 <code>@timer</code> 装饰器来测函数执行时间？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">装饰器</span></p>
+      <p><strong>基础版 @timer</strong>：</p>
+      <pre>import time
+
+def timer(func):
+    """计算函数执行时间的装饰器"""
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"{func.__name__} 耗时: {elapsed:.4f}s")
+        return result
+    return wrapper
+
+# 使用
+@timer
+def slow_function():
+    time.sleep(1)
+    return "完成"
+
+slow_function()  # 输出: slow_function 耗时: 1.0032s</pre>
+      <p><strong>进阶版：支持异步函数的 @timer</strong>：</p>
+      <pre>import time
+import asyncio
+import functools
+
+def async_timer(func):
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        start = time.time()
+        result = await func(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"⏱ {func.__name__} 耗时 {elapsed:.2f}s")
+        return result
+    return wrapper
+
+@async_timer
+async def fetch_data():
+    await asyncio.sleep(1)
+    return "数据"
+
+asyncio.run(fetch_data())</pre>
+      <p><strong>注意</strong>：异步装饰器的 wrapper 必须是 <code>async def</code>，内部用 <code>await</code> 调用原函数。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="deco">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">19</span>
+    <span class="q-text"><code>@functools.wraps</code> 是什么？为什么写装饰器必须加它？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">装饰器</span></p>
+      <p><code>@functools.wraps</code> 把原函数的元信息（<code>__name__</code>、<code>__doc__</code> 等）复制到 wrapper 函数上。</p>
+      <pre># ❌ 不加 @wraps 的后果
+def timer(func):
+    def wrapper(*args, **kwargs):
+        """我是 wrapper 的文档"""
+        ...
+        return func(*args, **kwargs)
+    return wrapper
+
+@timer
+def hello():
+    """我是 hello 的文档"""
+    print("Hello")
+
+print(hello.__name__)  # → "wrapper"（不是 "hello"！）
+print(hello.__doc__)   # → "我是 wrapper 的文档"（原文档丢失了！）</pre>
+      <pre># ✅ 加上 @wraps
+import functools
+
+def timer(func):
+    @functools.wraps(func)  # ← 复制 func 的元信息到 wrapper
+    def wrapper(*args, **kwargs):
+        ...
+        return func(*args, **kwargs)
+    return wrapper
+
+@timer
+def hello():
+    """我是 hello 的文档"""
+    print("Hello")
+
+print(hello.__name__)  # → "hello" ✅
+print(hello.__doc__)   # → "我是 hello 的文档" ✅</pre>
+      <p><strong>为什么重要</strong>：调试时 <code>__name__</code> 保留原函数名，否则所有被装饰的函数都显示为 <code>wrapper</code>，无法区分。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="deco">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">20</span>
+    <span class="q-text">带参数的装饰器怎么写？比如 <code>@retry(times=3)</code>？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">装饰器</span></p>
+      <p>带参数的装饰器需要<strong>三层嵌套</strong>：外层接收参数，中层接收函数，内层是 wrapper。</p>
+      <pre>def retry(times: int = 3, delay: float = 0):
+    """失败重试装饰器"""
+    def decorator(func):           # 中层：接收函数
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for i in range(times):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if i == times - 1:
+                        raise  # 最后一次失败，抛出异常
+                    print(f"重试 {i+1}/{times}: {e}")
+                    if delay:
+                        time.sleep(delay)
+            return None
+        return wrapper
+    return decorator               # 返回中层
+
+# 使用
+@retry(times=3, delay=1)
+def unstable_api():
+    import random
+    if random.random() < 0.7:
+        raise ConnectionError("网络错误")
+    return "成功"
+
+# 也可以不传参使用默认值
+@retry()
+def another_func():
+    ...
+
+# 工作原理：
+# @retry(times=3) 等价于 retry(times=3)  → 返回 decorator
+# decorator 再接收函数 → 返回 wrapper</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="deco">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">21</span>
+    <span class="q-text">Python 有哪些常见的内置装饰器？分别有什么用？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">装饰器</span></p>
+      <table class="cmp">
+        <tr><th>装饰器</th><th>作用</th></tr>
+        <tr><td><code>@property</code></td><td>把方法变成属性访问（不加括号）</td></tr>
+        <tr><td><code>@staticmethod</code></td><td>静态方法（不需要 self）</td></tr>
+        <tr><td><code>@classmethod</code></td><td>类方法（接收 cls 而不是 self）</td></tr>
+        <tr><td><code>@dataclass</code></td><td>自动生成 __init__、__repr__、__eq__</td></tr>
+        <tr><td><code>@functools.wraps</code></td><td>保留原函数元信息（写装饰器必备）</td></tr>
+        <tr><td><code>@functools.cached_property</code></td><td>属性值缓存，只计算一次</td></tr>
+        <tr><td><code>@functools.lru_cache</code></td><td>函数结果缓存（LRU 策略）</td></tr>
+      </table>
+      <p><strong>@cached_property 示例</strong>：</p>
+      <pre>from functools import cached_property
+
+class DataProcessor:
+    def __init__(self, data):
+        self.data = data
+
+    @cached_property
+    def processed(self):
+        """计算结果会被缓存，第二次访问直接返回缓存"""
+        print("处理大数据...")
+        time.sleep(2)  # 模拟耗时
+        return [x * 2 for x in self.data]
+
+dp = DataProcessor([1, 2, 3])
+print(dp.processed)  # 慢（实际计算）
+print(dp.processed)  # 快（返回缓存值）</pre>
+      <p><strong>AI 库中的常见装饰器</strong>：</p>
+      <pre># FastAPI
+@app.get("/api/users")        # 路由装饰器
+
+# LangChain
+@tool                         # 把函数变成 AI 可以调用的工具
+
+# PyTorch
+@torch.no_grad()              # 禁用梯度计算（推理时加速）</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="deco">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">22</span>
+    <span class="q-text">类装饰器（class decorator）和函数装饰器有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">装饰器</span></p>
+      <p>类装饰器是<strong>应用于类的装饰器</strong>，接收类、返回修改后的类或新类。</p>
+      <pre># 函数装饰器：接收函数，返回函数
+def timer(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        ...
+    return wrapper
+
+# 类装饰器：接收类，返回类
+def add_repr(cls):
+    """给类自动添加 __repr__ 方法"""
+    def __repr__(self):
+        items = ", ".join(f"{k}={v}" for k, v in self.__dict__.items())
+        return f"{cls.__name__}({items})"
+    cls.__repr__ = __repr__
+    return cls
+
+@add_repr
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+p = Point(3, 4)
+print(p)  # → Point(x=3, y=4)  （自动生成了 __repr__）</pre>
+      <p><strong>@dataclass 就是一个类装饰器</strong>——它接收一个类，自动添加 <code>__init__</code>、<code>__repr__</code>、<code>__eq__</code> 等方法，返回增强后的类。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="deco">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">23</span>
+    <span class="q-text">装饰器的执行顺序是什么？多个装饰器叠加时怎么工作？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">装饰器</span></p>
+      <p>多个装饰器叠加时，<strong>执行顺序是"从下往上"装饰，"从上往下"执行</strong>。</p>
+      <pre>@decorator_a
+@decorator_b
+@decorator_c
+def my_func():
+    pass
+
+# 实际等价于：
+my_func = decorator_a(decorator_b(decorator_c(my_func)))
+#          从下往上：先装饰 c → 再装饰 b → 最后装饰 a
+
+# 调用时执行顺序：
+# 1. decorator_a 的 wrapper 开始执行
+# 2. → decorator_b 的 wrapper 开始执行
+# 3. → decorator_c 的 wrapper 开始执行
+# 4. → 真正的 my_func 执行
+# 5. → decorator_c 的 wrapper 结束
+# 6. → decorator_b 的 wrapper 结束
+# 7. → decorator_a 的 wrapper 结束
+# 像洋葱一样，一层包一层</pre>
+      <p><strong>实际例子</strong>：</p>
+      <pre>def bold(func):
+    @functools.wraps(func)
+    def wrapper():
+        return f"<b>{func()}</b>"
+    return wrapper
+
+def italic(func):
+    @functools.wraps(func)
+    def wrapper():
+        return f"<i>{func()}</i>"
+    return wrapper
+
+@bold
+@italic
+def hello():
+    return "Hello"
+
+print(hello())  # → <b><i>Hello</i></b>
+
+# 装饰顺序：italic 先装饰 → bold 再装饰
+# 执行顺序：bold 先 → italic → hello → italic → bold</pre>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════ -->
+<!-- 模块 4：实战 - 同步 vs 异步对比 -->
+<!-- ════════════════════════════════ -->
+
+<div class="qa-card" data-cat="practice">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">24</span>
+    <span class="q-text">同步 vs 异步并发对比实验怎么设计？关键代码怎么写？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">实战</span></p>
+      <p><strong>实验思路</strong>：用同样的 10 个问题，分别用同步和异步方式调用 LLM，对比总耗时。</p>
+      <p><strong>同步版核心代码</strong>：</p>
+      <pre>def sync_call(prompt: str) -> str:
+    client = OpenAI(api_key=API_KEY, base_url=API_BASE)
+    resp = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return resp.choices[0].message.content
+
+def run_sync():
+    start = time.time()
+    results = [sync_call(p) for p in PROMPTS]     # 逐个串行
+    elapsed = time.time() - start
+    print(f"同步耗时: {elapsed:.2f}s")
+    return elapsed</pre>
+      <p><strong>异步版核心代码</strong>：</p>
+      <pre>async def async_call(client: AsyncOpenAI, prompt: str) -> str:
+    resp = await client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return resp.choices[0].message.content
+
+async def run_async():
+    client = AsyncOpenAI(api_key=API_KEY, base_url=API_BASE)
+    start = time.time()
+    results = await asyncio.gather(    # 并发执行！
+        *[async_call(client, p) for p in PROMPTS]
+    )
+    elapsed = time.time() - start
+    print(f"异步耗时: {elapsed:.2f}s")
+    return elapsed
+
+# 主程序
+if __name__ == "__main__":
+    t_sync = run_sync()
+    t_async = asyncio.run(run_async())
+    print(f"异步比同步快 {t_sync / t_async:.1f} 倍")</pre>
+      <p><strong>预期结果</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>同步：10 个请求逐个执行，总耗时 ≈ 10 * 单个响应时间（如 30 秒）</li>
+        <li>异步：10 个请求并发执行，总耗时 ≈ 最慢的那个响应时间（如 3 秒）</li>
+        <li>加速比通常在 5-10 倍</li>
+      </ul>
+      <p><strong>关键差异点</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>同步用 <code>OpenAI(...)</code> 客户端 + 普通 for 循环</li>
+        <li>异步用 <code>AsyncOpenAI(...)</code> 客户端 + <code>asyncio.gather()</code></li>
+        <li>异步要用 <code>asyncio.run()</code> 启动事件循环</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="practice">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">25</span>
+    <span class="q-text"><code>AsyncLLMClient</code> 和 <code>LLMClient</code> 相比，核心改动有哪些？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">实战</span></p>
+      <p><strong>核心改动对照表</strong>：</p>
+      <table class="cmp">
+        <tr><th>组件</th><th>LLMClient（Day 2）</th><th>AsyncLLMClient（Day 3）</th></tr>
+        <tr><td>导入</td><td><code>from openai import OpenAI</code></td><td><code>from openai import AsyncOpenAI</code></td></tr>
+        <tr><td>客户端</td><td><code>self._client = OpenAI(...)</code></td><td><code>self._client = AsyncOpenAI(...)</code></td></tr>
+        <tr><td>chat 方法</td><td><code>def chat(...) -> str</code></td><td><code>async def chat(...) -> str</code></td></tr>
+        <tr><td>API 调用</td><td><code>resp = self._client...create()</code></td><td><code>resp = await self._client...create()</code></td></tr>
+        <tr><td>流式返回</td><td><code>Generator[str, None, None]</code></td><td><code>AsyncGenerator[str, None]</code></td></tr>
+        <tr><td>流式迭代</td><td><code>for chunk in stream</code></td><td><code>async for chunk in stream</code></td></tr>
+        <tr><td>类型标注</td><td>基础类型</td><td>完整类型（Literal、AsyncGenerator 等）</td></tr>
+        <tr><td>计时</td><td>手动写</td><td><code>@async_timer</code> 装饰器</td></tr>
+      </table>
+      <p><strong>AsyncLLMClient 完整代码结构</strong>：</p>
+      <pre>Role = Literal["user", "assistant", "system"]
+
+@dataclass
+class ChatMessage:
+    role: Role
+    content: str
+    def to_dict(self) -> dict[str, str]:
+        return {"role": self.role, "content": self.content}
+
+@dataclass
+class AsyncLLMClient:
+    api_key: str = field(default_factory=lambda: os.getenv("API_KEY", ""))
+    base_url: str = field(default_factory=lambda: os.getenv("API_BASE", ""))
+    model: str = field(default_factory=lambda: os.getenv("MODEL", ""))
+    temperature: float = 0.7
+    system_prompt: str = "你是一个有帮助的AI助手。"
+
+    def __post_init__(self) -> None:
+        self._client = AsyncOpenAI(...)
+        self._history: list[ChatMessage] = []
+        self.reset()
+
+    @async_timer
+    async def chat(self, user_input: str) -> str: ...
+
+    async def stream_chat(self, user_input: str) -> AsyncGenerator[str, None]: ...</pre>
+      <p><strong>使用方式变化</strong>：</p>
+      <pre># Day 2 同步版
+client = LLMClient()
+reply = client.chat("你好")
+
+# Day 3 异步版
+client = AsyncLLMClient()
+reply = await client.chat("你好")</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="practice">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">26</span>
+    <span class="q-text">mypy 类型检查怎么做？怎么让 AsyncLLMClient 通过 mypy 检查？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">实战</span></p>
+      <p><strong>安装 mypy</strong>：</p>
+      <pre>pip install mypy</pre>
+      <p><strong>运行检查</strong>：</p>
+      <pre>mypy async_llm_client.py
+# 如果一切正常，输出：Success: no issues found in 1 source file
+
+# 忽略 import 错误（比如某些库没有类型标注）
+mypy --ignore-missing-imports async_llm_client.py</pre>
+      <p><strong>常见 mypy 错误及修复</strong>：</p>
+      <pre># ❌ 错误：Missing return type annotation
+def chat(self, user_input):  # mypy 要求写返回类型
+# ✅ 修复：def chat(self, user_input: str) -> str:
+
+# ❌ 错误：Incompatible types
+self._history: List[ChatMessage] = []
+# ✅ 修复：self._history: list[ChatMessage] = []
+
+# ❌ 错误：Argument 1 to "Literal" has incompatible type
+role: Literal["user", "assistant"] = "admin"
+# ✅ 修复：只能是 "user" 或 "assistant"
+
+# ❌ 错误：Return type of async generator
+async def stream_chat(...) -> AsyncGenerator:
+# ✅ 修复：-> AsyncGenerator[str, None]</pre>
+      <p><strong>mypy 配置</strong>（在项目根目录创建 <code>pyproject.toml</code> 或 <code>mypy.ini</code>）：</p>
+      <pre># mypy.ini
+[mypy]
+ignore_missing_imports = True
+strict = False
+python_version = 3.11</pre>
+      <p>持续集成中加 mypy 检查可以提前发现很多隐式类型错误，相当于 Swift 编译器的类型检查。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="practice">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">27</span>
+    <span class="q-text">AsyncLLMClient 的 <code>@async_timer</code> 装饰器是怎么工作的？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">实战</span></p>
+      <p><code>@async_timer</code> 是一个异步函数专用的计时装饰器：</p>
+      <pre>def async_timer(func):
+    """异步函数计时装饰器"""
+    @functools.wraps(func)             # 保留原函数的 __name__ 等元信息
+    async def wrapper(*args, **kwargs):
+        start = time.time()            # 开始计时
+        result = await func(*args, **kwargs)  # await 原异步函数
+        elapsed = time.time() - start  # 结束计时
+        print(f"⏱ {func.__name__} 耗时 {elapsed:.2f}s")
+        return result                  # 返回原函数的结果
+    return wrapper
+
+# 使用
+class AsyncLLMClient:
+    @async_timer
+    async def chat(self, user_input: str) -> str:
+        ...  # 调用时自动计时并打印耗时</pre>
+      <p><strong>和同步 @timer 的区别</strong>：</p>
+      <table class="cmp">
+        <tr><th>&nbsp;</th><th><strong>@timer（同步）</strong></th><th><strong>@async_timer（异步）</strong></th></tr>
+        <tr><td>wrapper 类型</td><td><code>def wrapper(...)</code></td><td><code>async def wrapper(...)</code></td></tr>
+        <tr><td>调用原函数</td><td><code>func(*args)</code></td><td><code>await func(*args)</code></td></tr>
+        <tr><td>适用范围</td><td>普通函数</td><td>async def 定义的协程函数</td></tr>
+      </table>
+      <p><strong>@functools.wraps 的作用</strong>：如果不加，被装饰的函数的 <code>__name__</code> 会变成 <code>wrapper</code>，而不是原本的 <code>chat</code>，影响调试和日志。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="practice">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">28</span>
+    <span class="q-text">异步版的 <code>stream_chat</code> 用了 <code>AsyncGenerator</code>，它和同步的 <code>Generator</code> 有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">实战</span></p>
+      <table class="cmp">
+        <tr><th>&nbsp;</th><th><strong>Generator（同步）</strong></th><th><strong>AsyncGenerator（异步）</strong></th></tr>
+        <tr><td>定义</td><td><code>def gen() -> Generator[str, None, None]:</code></td><td><code>async def gen() -> AsyncGenerator[str, None]:</code></td></tr>
+        <tr><td>yield</td><td><code>yield value</code></td><td><code>yield value</code>（一样）</td></tr>
+        <tr><td>迭代方式</td><td><code>for item in gen()</code></td><td><code>async for item in gen()</code></td></tr>
+        <tr><td>内部可 await</td><td>❌ 不能</td><td>✅ 可以（用于流式 API）</td></tr>
+      </table>
+      <pre># 同步流式生成器
+def stream_chat(self, user_input: str) -> Generator[str, None, None]:
+    ...
+    for chunk in stream:          # 同步 for
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta
+
+# 异步流式生成器
+async def stream_chat(self, user_input: str) -> AsyncGenerator[str, None]:
+    ...
+    stream = await self._client...create(...)  # 先 await 拿到流
+    async for chunk in stream:    # 异步 async for
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta</pre>
+      <p><strong>调用方变化</strong>：</p>
+      <pre># 同步使用
+for chunk in client.stream_chat("你好"):
+    print(chunk, end="")
+
+# 异步使用（必须在 async 函数内）
+async for chunk in client.stream_chat("你好"):
+    print(chunk, end="")</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="practice">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">29</span>
+    <span class="q-text">Day 3 实战完成后，Git 提交的 commit message 应该怎么写？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag tag-deco">实战</span></p>
+      <p><strong>推荐格式</strong>：</p>
+      <pre>git add .
+git commit -m "$(cat <<'EOF'
+Day 3: 异步编程 + 类型标注 + 装饰器
+
+- 同步 vs 异步对比实验（async_vs_sync.py）
+  → 异步比同步快 5-10 倍（10 个并发请求）
+- AsyncLLMClient 重构（async_llm_client.py）
+  → OpenAI → AsyncOpenAI
+  → 完整类型标注（Literal/AsyncGenerator）
+  → @async_timer 装饰器计时
+- mypy 类型检查 0 errors
+EOF
+)"</pre>
+      <p><strong>复盘要点</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>记录同步 vs 异步的实际耗时数据（方便以后参考）</li>
+        <li>标记哪些知识点感觉模糊，明天重点看</li>
+        <li>预习 Day 4 的 NumPy 基础</li>
+      </ul>
+      <p><strong>完成检查清单</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>✅ async/await 与同步代码的区别能解释清楚</li>
+        <li>✅ async_vs_sync.py 跑通，看到 3 倍以上加速</li>
+        <li>✅ 类型标注熟练（Literal / AsyncGenerator 等）</li>
+        <li>✅ 能徒手写一个装饰器（含 @wraps）</li>
+        <li>✅ AsyncLLMClient 重构完成，运行正常</li>
+        <li>✅ mypy 类型检查 0 errors</li>
+        <li>✅ Git push 成功</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="stats">
+  📚 共 29 个问答 · Day 3 · 异步编程 + 类型标注 + 装饰器 + 实战
+</div>
+
+</div>
+
+<script>
+function toggleCard(header) {
+  const card = header.parentElement;
+  const wasOpen = card.classList.contains('open');
+  document.querySelectorAll('.qa-card.open').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) card.classList.add('open');
+}
+function filterByCat(cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  document.querySelectorAll('.qa-card').forEach(card => {
+    card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+  });
+}
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.qa-card').forEach(card => {
+    const text = card.querySelector('.q-text').textContent.toLowerCase();
+    const answer = card.querySelector('.qa-answer').textContent.toLowerCase();
+    card.style.display = (text.includes(q) || answer.includes(q)) ? '' : 'none';
+  });
+}
+</script>
+
+</body>
+</html>

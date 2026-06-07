@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 3 (6/3) - 异步编程 + 类型标注</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; color: #1a1a2e; line-height: 1.65; background: #f0f2f5; }
+.page { max-width: 900px; margin: 0 auto; background: #fff; }
+.header { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: #fff; padding: 28px 36px; }
+.header .day-badge { display: inline-block; background: #e94560; padding: 4px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; margin-bottom: 10px; }
+.header h1 { font-size: 26px; margin-bottom: 4px; }
+.header .subtitle { opacity: 0.75; font-size: 14px; }
+.header .meta { display: flex; gap: 24px; margin-top: 12px; font-size: 13px; opacity: 0.85; flex-wrap: wrap; }
+.content { padding: 28px 36px; }
+.phase { border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 22px; overflow: hidden; }
+.phase-header { padding: 12px 18px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+.phase-day { background: #e3f2fd; color: #0d47a1; }
+.phase-night { background: #ede7f6; color: #4a148c; }
+.phase-body { padding: 16px 18px; }
+.task { border-left: 4px solid #ddd; padding: 12px 16px; margin-bottom: 14px; background: #fafafa; border-radius: 0 8px 8px 0; }
+.task.learn { border-left-color: #2196f3; }
+.task.practice { border-left-color: #4caf50; }
+.task.verify { border-left-color: #ff9800; }
+.task-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.tag-learn { background: #e3f2fd; color: #1565c0; }
+.tag-practice { background: #e8f5e9; color: #2e7d32; }
+.tag-verify { background: #fff3e0; color: #ef6c00; }
+.tag-time { background: #f3e5f5; color: #7b1fa2; }
+.task-detail { font-size: 13px; color: #444; margin-top: 6px; }
+.task-detail p { margin: 3px 0; }
+.task-detail a { color: #1565c0; text-decoration: none; border-bottom: 1px dashed #1565c0; }
+.task-detail a:hover { color: #0d47a1; border-bottom-style: solid; }
+.task-detail code { background: #f5f5f5; padding: 1px 6px; border-radius: 3px; font-family: "Cascadia Code", monospace; font-size: 12px; color: #c62828; }
+.purpose { background: #e8eaf6; border-radius: 6px; padding: 8px 12px; margin-top: 6px; font-size: 13px; }
+.purpose::before { content: "🎯 目的："; font-weight: 700; }
+.verify-box { background: #fff8e1; border-radius: 6px; padding: 8px 12px; margin-top: 6px; font-size: 13px; }
+.verify-box::before { content: "✅ 验证标准："; font-weight: 700; }
+.tip { background: linear-gradient(135deg, #fffde7, #fff9c4); border-left: 4px solid #fbc02d; padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 14px 0; font-size: 13px; }
+.checklist { margin-top: 14px; }
+.checklist h3 { font-size: 15px; color: #0d47a1; margin-bottom: 8px; }
+.check-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #e0e0e0; font-size: 13px; }
+.check-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4caf50; }
+.notes { margin-top: 18px; }
+.notes textarea { width: 100%; min-height: 80px; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; font-size: 13px; font-family: inherit; resize: vertical; }
+.print-bar { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; gap: 8px; }
+.print-bar a, .print-bar button { padding: 10px 18px; border: none; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.15); text-decoration: none; }
+.btn-print { background: #0d47a1; color: #fff; }
+.btn-nav { background: #fff; color: #333; }
+pre { background: #1e1e2e; color: #cdd6f4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; margin-top: 6px; font-family: "Cascadia Code", monospace; }
+@media print {
+    body { background: #fff; }
+    .print-bar { display: none; }
+    a { color: #1565c0 !important; text-decoration: underline !important; }
+    a::after { content: " (" attr(href) ")"; font-size: 10px; color: #666; }
+    .phase, .task { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="print-bar">
+    <a class="btn-nav" href="AI学习计划_Day2.html">◀ 上一天</a>
+    <a class="btn-nav" href="AI学习计划_总览.html">📋 总览</a>
+    <button class="btn-print" onclick="window.print()">🖨 打印</button>
+    <a class="btn-nav" href="AI学习计划_Day4.html">下一天 ▶</a>
+</div>
+
+<div class="page">
+
+<div class="header">
+    <div class="day-badge">DAY 3 / 180</div>
+    <h1>异步编程 + 类型标注 + 装饰器原理</h1>
+    <div class="subtitle">第 1 周 · Python 速成 · 让 LLM 调用快 10 倍</div>
+    <div class="meta">
+        <span>📅 2026年6月3日 周三</span>
+        <span>⏱ 白天 3h + 晚上 3h = 6h</span>
+        <span>🛠 Trae</span>
+    </div>
+</div>
+
+<div class="content">
+
+<div class="phase">
+    <div class="phase-header phase-day"><span>☀️ 白天（公司 3 小时）— 理论学习</span><span>09:00 - 12:00</span></div>
+    <div class="phase-body">
+
+        <div class="task learn">
+            <div class="task-title"><span class="icon">📖</span>任务 1：Python 异步编程 async/await<span class="tag tag-learn">学习</span><span class="tag tag-time">90 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>学习资料：</strong></p>
+                <p>📚 <a href="https://docs.python.org/zh-cn/3/library/asyncio.html" target="_blank">asyncio 官方文档（前 3 节）</a>（25 分钟）</p>
+                <p>📚 <a href="https://realpython.com/async-io-python/" target="_blank">RealPython: Async IO in Python 完全指南</a>（35 分钟）⭐</p>
+                <p>📺 <a href="https://www.youtube.com/watch?v=t5Bo1Je9EmE" target="_blank">YouTube: Python Asyncio 25 分钟速通</a></p>
+                <p>📚 <a href="https://fastapi.tiangolo.com/zh/async/" target="_blank">FastAPI 异步详解</a>（25 分钟）</p>
+                <p><strong>对比 Swift Concurrency：</strong></p>
+                <pre>// Swift
+func fetch() async throws -> String {
+    let (data, _) = try await URLSession.shared.data(from: url)
+    return String(data: data, encoding: .utf8) ?? ""
+}
+Task { let result = try await fetch() }
+
+# Python（几乎一样）
+async def fetch() -> str:
+    async with httpx.AsyncClient() as c:
+        r = await c.get(url)
+    return r.text
+
+asyncio.run(fetch())</pre>
+                <p><strong>必掌握知识点：</strong></p>
+                <p>• <strong>同步 vs 异步本质区别</strong>：阻塞 vs 不阻塞</p>
+                <p>• <strong>事件循环 Event Loop</strong>：Python 异步的核心</p>
+                <p>• <strong>async def</strong>：定义协程函数</p>
+                <p>• <strong>await</strong>：等待协程完成（不阻塞线程）</p>
+                <p>• <strong>asyncio.run()</strong>：启动事件循环</p>
+                <p>• <strong>asyncio.gather()</strong>：并发执行多个协程（必须掌握）⭐</p>
+                <p>• <strong>asyncio.create_task()</strong>：创建任务后台运行</p>
+                <p>• <strong>async with / async for</strong>：异步上下文/迭代</p>
+                <p>• <strong>为什么 LLM 调用必须用异步</strong>：IO 密集，同步 10 个请求要等 10*响应时间，异步只要 1 倍时间</p>
+                <div class="purpose">大模型 API 调用是 IO 密集任务，异步可让你的程序快 5-20 倍，是 AI 工程师必备能力。</div>
+                <div class="verify-box">能用一句话解释为什么 LLM 调用必须用异步而非多线程。</div>
+            </div>
+        </div>
+
+        <div class="task learn">
+            <div class="task-title"><span class="icon">📖</span>任务 2：类型标注 Type Hints<span class="tag tag-learn">学习</span><span class="tag tag-time">45 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>学习资料：</strong></p>
+                <p>📚 <a href="https://docs.python.org/zh-cn/3/library/typing.html" target="_blank">typing 模块官方文档</a></p>
+                <p>📚 <a href="https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html" target="_blank">mypy 类型速查表</a>（必读，5 分钟看完）⭐</p>
+                <p>📚 <a href="https://realpython.com/lessons/type-hinting/" target="_blank">RealPython: Type Hinting</a></p>
+                <p><strong>必掌握类型：</strong></p>
+                <pre>from typing import List, Dict, Optional, Union, Callable, Any, Literal, TypedDict
+
+# 基础
+x: int = 1
+y: str = "hello"
+z: float = 3.14
+
+# 容器（Python 3.9+ 可直接用 list/dict）
+nums: list[int] = [1, 2, 3]
+mapping: dict[str, int] = {"a": 1}
+pair: tuple[str, int] = ("a", 1)
+
+# 可选
+maybe_x: Optional[int] = None  # 等同于 int | None
+
+# 联合类型
+val: Union[int, str] = 1  # 或 int | str
+
+# 函数类型
+handler: Callable[[int, str], bool] = lambda x, y: True
+
+# 字面量（很重要！LangChain 大量用）
+role: Literal["user", "assistant", "system"] = "user"
+
+# TypedDict（结构化字典）
+class Message(TypedDict):
+    role: str
+    content: str</pre>
+                <p><strong>必装工具：</strong></p>
+                <p><code>pip install mypy</code> → 静态类型检查</p>
+                <p><code>mypy your_file.py</code> → 检查类型错误</p>
+                <div class="purpose">写有类型的 Python = Swift 程序员的舒适区，Trae/IDE 智能补全大幅提升，bug 大幅减少。</div>
+                <div class="verify-box">能徒手写出一个带完整类型标注的函数 <code>def fetch(url: str, timeout: int = 10) -> Optional[dict]</code>。</div>
+            </div>
+        </div>
+
+        <div class="task learn">
+            <div class="task-title"><span class="icon">📖</span>任务 3：装饰器原理与实战<span class="tag tag-learn">学习</span><span class="tag tag-time">45 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>学习资料：</strong></p>
+                <p>📚 <a href="https://realpython.com/primer-on-python-decorators/" target="_blank">RealPython: Python 装饰器完全指南</a> ⭐</p>
+                <p>📺 <a href="https://www.bilibili.com/video/BV1NJ411P7sw" target="_blank">B站：Python 装饰器深入讲解</a></p>
+                <p><strong>必掌握：</strong></p>
+                <p>• <strong>函数装饰器</strong>：本质是高阶函数</p>
+                <p>• <strong>@wraps</strong>：保留原函数元信息</p>
+                <p>• <strong>带参数的装饰器</strong></p>
+                <p>• <strong>类装饰器</strong></p>
+                <p>• <strong>常见内置装饰器</strong>：@property、@staticmethod、@classmethod、@dataclass、@cached_property</p>
+                <p>• <strong>AI 库中的装饰器</strong>：@app.get（FastAPI）、@tool（LangChain）、@torch.no_grad（PyTorch）</p>
+                <div class="purpose">FastAPI 路由全是装饰器，LangChain 工具定义也用装饰器，必须熟练。</div>
+                <div class="verify-box">能徒手写一个 @timer 装饰器测函数执行时间，并能解释 @wraps 的作用。</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="phase">
+    <div class="phase-header phase-night"><span>🌙 晚上（家里 3 小时）— 动手实战</span><span>19:00 - 22:00</span></div>
+    <div class="phase-body">
+
+        <div class="task practice">
+            <div class="task-title"><span class="icon">💻</span>任务 4：同步 vs 异步并发对比实验<span class="tag tag-practice">实战</span><span class="tag tag-time">75 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>实验目标：</strong>亲眼看到异步比同步快 5-10 倍</p>
+                <p>创建 <code>day3/async_vs_sync.py</code>：</p>
+<pre>"""
+对比同步 vs 异步并发调用 LLM 的性能差异
+"""
+import time
+import asyncio
+import os
+from openai import OpenAI, AsyncOpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+API_BASE = os.getenv("API_BASE")
+MODEL = os.getenv("MODEL")
+
+PROMPTS = [
+    "用一句话介绍Python",
+    "用一句话介绍Swift",
+    "用一句话介绍Rust",
+    "用一句话介绍Go",
+    "用一句话介绍TypeScript",
+    "用一句话介绍Java",
+    "用一句话介绍C++",
+    "用一句话介绍Kotlin",
+    "用一句话介绍Dart",
+    "用一句话介绍Ruby",
+]
+
+
+# ========= 同步版 =========
+def sync_call(prompt: str) -> str:
+    client = OpenAI(api_key=API_KEY, base_url=API_BASE)
+    resp = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return resp.choices[0].message.content
+
+
+def run_sync():
+    start = time.time()
+    results = [sync_call(p) for p in PROMPTS]
+    elapsed = time.time() - start
+    print(f"\n🐢 同步耗时: {elapsed:.2f}s")
+    return elapsed
+
+
+# ========= 异步版 =========
+async def async_call(client: AsyncOpenAI, prompt: str) -> str:
+    resp = await client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return resp.choices[0].message.content
+
+
+async def run_async():
+    client = AsyncOpenAI(api_key=API_KEY, base_url=API_BASE)
+    start = time.time()
+    results = await asyncio.gather(*[async_call(client, p) for p in PROMPTS])
+    elapsed = time.time() - start
+    print(f"\n🚀 异步耗时: {elapsed:.2f}s")
+    return elapsed
+
+
+if __name__ == "__main__":
+    print(f"测试 {len(PROMPTS)} 个 LLM 请求...")
+    t_sync = run_sync()
+    t_async = asyncio.run(run_async())
+    print(f"\n✨ 异步比同步快 {t_sync / t_async:.1f} 倍")</pre>
+                <p>运行：<code>python day3/async_vs_sync.py</code></p>
+                <div class="purpose">用数据说话，建立对异步性能优势的肌肉记忆。</div>
+                <div class="verify-box">看到异步比同步快至少 3 倍（一般 5-10 倍）。</div>
+            </div>
+        </div>
+
+        <div class="task practice">
+            <div class="task-title"><span class="icon">💻</span>任务 5：重构 LLMClient 为异步版 + 完整类型标注<span class="tag tag-practice">实战</span><span class="tag tag-time">75 分钟</span></div>
+            <div class="task-detail">
+                <p><strong>任务：</strong>把 Day 2 的 <code>LLMClient</code> 重构为 <code>AsyncLLMClient</code>，添加完整类型标注，用 mypy 验证。</p>
+                <p>创建 <code>day3/async_llm_client.py</code>：</p>
+<pre>from dataclasses import dataclass, field
+from typing import List, Optional, AsyncGenerator, Literal
+from openai import AsyncOpenAI
+import os
+import time
+import functools
+from dotenv import load_dotenv
+
+load_dotenv()
+
+Role = Literal["user", "assistant", "system"]
+
+
+def async_timer(func):
+    """异步函数计时装饰器"""
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        start = time.time()
+        result = await func(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"⏱  {func.__name__} 耗时 {elapsed:.2f}s")
+        return result
+    return wrapper
+
+
+@dataclass
+class ChatMessage:
+    role: Role
+    content: str
+
+    def to_dict(self) -> dict[str, str]:
+        return {"role": self.role, "content": self.content}
+
+
+@dataclass
+class AsyncLLMClient:
+    api_key: str = field(default_factory=lambda: os.getenv("API_KEY", ""))
+    base_url: str = field(default_factory=lambda: os.getenv("API_BASE", ""))
+    model: str = field(default_factory=lambda: os.getenv("MODEL", ""))
+    temperature: float = 0.7
+    system_prompt: str = "你是一个有帮助的AI助手。"
+
+    def __post_init__(self) -> None:
+        self._client = AsyncOpenAI(api_key=self.api_key, base_url=self.base_url)
+        self._history: List[ChatMessage] = []
+        self.reset()
+
+    def reset(self) -> None:
+        self._history = [ChatMessage(role="system", content=self.system_prompt)]
+
+    @async_timer
+    async def chat(self, user_input: str) -> str:
+        self._history.append(ChatMessage(role="user", content=user_input))
+        resp = await self._client.chat.completions.create(
+            model=self.model,
+            messages=[m.to_dict() for m in self._history],
+            temperature=self.temperature,
+        )
+        reply = resp.choices[0].message.content or ""
+        self._history.append(ChatMessage(role="assistant", content=reply))
+        return reply
+
+    async def stream_chat(self, user_input: str) -> AsyncGenerator[str, None]:
+        self._history.append(ChatMessage(role="user", content=user_input))
+        stream = await self._client.chat.completions.create(
+            model=self.model,
+            messages=[m.to_dict() for m in self._history],
+            stream=True,
+            temperature=self.temperature,
+        )
+        full = ""
+        async for chunk in stream:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                full += delta
+                yield delta
+        self._history.append(ChatMessage(role="assistant", content=full))
+
+
+# 异步主程序示例
+async def main():
+    client = AsyncLLMClient()
+    reply = await client.chat("你好")
+    print("回复:", reply)
+    print("\n流式输出:")
+    async for chunk in client.stream_chat("用一句话介绍Python"):
+        print(chunk, end="", flush=True)
+    print()
+
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())</pre>
+                <p><strong>类型检查：</strong></p>
+                <p><code>pip install mypy</code></p>
+                <p><code>mypy day3/async_llm_client.py</code></p>
+                <div class="purpose">异步 + 类型 + 装饰器三合一，达到生产级代码质量。</div>
+                <div class="verify-box">程序运行正常，mypy 检查 0 errors。</div>
+            </div>
+        </div>
+
+        <div class="task verify">
+            <div class="task-title"><span class="icon">✅</span>任务 6：Git 提交 + 复盘 + 预习<span class="tag tag-verify">复盘</span><span class="tag tag-time">30 分钟</span></div>
+            <div class="task-detail">
+                <p>1. Git 提交：<code>git commit -m "Day 3: async + typing + decorator"</code></p>
+                <p>2. 笔记：异步耗时对比数据 / 装饰器原理 / 类型标注的好处</p>
+                <p>3. 预习明天：<a href="https://numpy.org/doc/stable/user/absolute_beginners.html" target="_blank">NumPy 绝对初学者指南（浏览）</a></p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="checklist">
+    <h3>📋 Day 3 完成检查清单</h3>
+    <div class="check-item"><input type="checkbox" id="c1"><label for="c1">理解 async/await 与同步代码的区别</label></div>
+    <div class="check-item"><input type="checkbox" id="c2"><label for="c2">async_vs_sync.py 跑通，看到 3 倍以上加速</label></div>
+    <div class="check-item"><input type="checkbox" id="c3"><label for="c3">类型标注熟练（List/Dict/Optional/Literal）</label></div>
+    <div class="check-item"><input type="checkbox" id="c4"><label for="c4">能徒手写一个装饰器</label></div>
+    <div class="check-item"><input type="checkbox" id="c5"><label for="c5">AsyncLLMClient 重构完成并运行正常</label></div>
+    <div class="check-item"><input type="checkbox" id="c6"><label for="c6">mypy 类型检查 0 errors</label></div>
+    <div class="check-item"><input type="checkbox" id="c7"><label for="c7">Git push 成功</label></div>
+</div>
+
+<div class="notes">
+    <h3>📝 今日学习笔记</h3>
+    <textarea placeholder="收获 1：&#10;收获 2：&#10;收获 3：&#10;疑问：&#10;明天重点："></textarea>
+</div>
+
+<div class="tip">
+    <strong>📌 明天（Day 4）预告：</strong>NumPy 速通（ndarray/广播/矩阵运算）+ Pandas 速通（DataFrame/groupby）+ 手撸向量相似度算法 + Alpaca 微调数据集清洗。
+</div>
+
+</div>
+</div>
+
+</body>
+</html>

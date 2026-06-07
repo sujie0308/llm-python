@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 1 知识点问答 - Python基础与开发环境</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; background: #f0f2f5; color: #1a1a2e; padding: 20px; }
+.page { max-width: 860px; margin: 0 auto; }
+.header { background: linear-gradient(135deg, #1a237e, #283593, #3949ab); color: #fff; padding: 28px 36px; border-radius: 14px 14px 0 0; }
+.header h1 { font-size: 24px; margin-bottom: 6px; }
+.header .sub { opacity: 0.8; font-size: 14px; }
+.category-bar { display: flex; gap: 8px; padding: 16px 0; flex-wrap: wrap; }
+.cat-btn { padding: 6px 16px; border: 2px solid #ddd; border-radius: 20px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+.cat-btn:hover { border-color: #3949ab; }
+.cat-btn.active { background: #3949ab; color: #fff; border-color: #3949ab; }
+.search-box { padding: 12px 0; }
+.search-box input { width: 100%; padding: 10px 16px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+.search-box input:focus { border-color: #3949ab; }
+.qa-card { background: #fff; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; transition: box-shadow 0.2s; }
+.qa-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+.qa-question { padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; user-select: none; }
+.qa-question .q-icon { background: #3949ab; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+.qa-question .q-text { flex: 1; font-size: 15px; font-weight: 600; line-height: 1.5; }
+.qa-question .q-toggle { font-size: 18px; color: #999; transition: transform 0.3s; flex-shrink: 0; }
+.qa-card.open .q-toggle { transform: rotate(180deg); }
+.qa-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease; padding: 0 20px; }
+.qa-card.open .qa-answer { max-height: 2500px; padding: 0 20px 20px 20px; }
+.qa-answer .a-body { font-size: 14px; line-height: 1.8; color: #333; }
+.qa-answer .a-body p { margin: 6px 0; }
+.qa-answer .a-body strong { color: #1a237e; }
+.qa-answer .a-body code { background: #f5f5f5; padding: 1px 6px; border-radius: 4px; font-family: "Cascadia Code", "Fira Code", monospace; font-size: 13px; color: #c62828; }
+.qa-answer .a-body pre { background: #1e1e2e; color: #cdd6f4; padding: 12px 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 8px 0; font-family: "Cascadia Code", monospace; }
+.qa-answer .a-body table.cmp { width: 100%; font-size: 12px; margin: 8px 0; border-collapse: collapse; }
+.qa-answer .a-body table.cmp th { background: #e8eaf6; padding: 6px 10px; text-align: left; border: 1px solid #ddd; }
+.qa-answer .a-body table.cmp td { padding: 5px 10px; border: 1px solid #ddd; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+tag-env { background: #e3f2fd; color: #1565c0; }
+tag-py { background: #fff3e0; color: #ef6c00; }
+tag-gpu { background: #fce4ec; color: #c62828; }
+tag-api { background: #e8f5e9; color: #2e7d32; }
+tag-git { background: #ede7f6; color: #4a148c; }
+.stats { text-align: center; padding: 20px; color: #666; font-size: 13px; }
+@media (max-width: 600px) {
+  body { padding: 10px; }
+  .header { padding: 20px; }
+  .qa-question { padding: 14px 16px; }
+  .qa-question .q-text { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<div class="header">
+  <h1>📘 Day 1 知识点问答</h1>
+  <div class="sub">Python 基础语法 · Conda 环境 · PyTorch/GPU · 第一次 API 调用 · Git</div>
+</div>
+
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="🔍 搜索问题..." oninput="filterCards()">
+</div>
+
+<div class="category-bar" id="categoryBar">
+  <button class="cat-btn active" data-cat="all" onclick="filterByCat('all')">全部</button>
+  <button class="cat-btn" data-cat="env" onclick="filterByCat('env')">Conda 环境</button>
+  <button class="cat-btn" data-cat="py" onclick="filterByCat('py')">Python 语法</button>
+  <button class="cat-btn" data-cat="gpu" onclick="filterByCat('gpu')">PyTorch / GPU</button>
+  <button class="cat-btn" data-cat="api" onclick="filterByCat('api')">API 调用</button>
+  <button class="cat-btn" data-cat="tool" onclick="filterByCat('tool')">工具 / Git</button>
+</div>
+
+<!-- ══════════════════════ Conda / 环境 ═══════════════════ -->
+
+<div class="qa-card" data-cat="env">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">1</span>
+    <span class="q-text">为什么 AI 开发需要虚拟环境？Conda 和 pip 的区别是什么？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">conda环境</span></p>
+      <p><strong>虚拟环境的必要性</strong>：不同 AI 项目依赖的 PyTorch/CUDA 版本可能冲突。比如项目 A 要 PyTorch 2.0 + CUDA 11.8，项目 B 要 PyTorch 2.5 + CUDA 12.4。没有虚拟环境就会打架。</p>
+      <p><strong>Conda vs pip</strong>：</p>
+      <table class="cmp">
+        <tr><th>&nbsp;</th><th><strong>Conda</strong></th><th><strong>pip</strong></th></tr>
+        <tr><td>管理范围</td><td>Python + 系统库（如 CUDA）</td><td>仅 Python 包</td></tr>
+        <tr><td>环境隔离</td><td>✅ 原生支持</td><td>❌ 需要 venv/poetry</td></tr>
+        <tr><td>依赖解析</td><td>强（SAT 求解器）</td><td>弱（可能有冲突）</td></tr>
+        <tr><td>适用场景</td><td>数据科学 / ML（PyTorch, GPU）</td><td>通用 Python</td></tr>
+        <tr><td>常用命令</td><td><code>conda create / install</code></td><td><code>pip install</code></td></tr>
+      </table>
+      <p><strong>最佳实践</strong>：用 Conda 管理环境 + Python 版本，用 pip 装包（因为 PyPI 上的包更新更快）。即：<code>conda create -n llm python=3.11 -y</code>，然后 <code>pip install torch ...</code></p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="env">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">2</span>
+    <span class="q-text">怎么创建一个叫 llm 的 Conda 环境？怎么激活和删除？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">conda环境</span></p>
+      <p><strong>创建环境</strong>：</p>
+      <pre>conda create -n llm python=3.11 -y</pre>
+      <p><strong>激活环境</strong>：</p>
+      <pre>conda activate llm</pre>
+      <p>激活后终端前面会出现 <code>(llm)</code> 标记，所有 <code>python</code> 和 <code>pip</code> 命令都在这个环境里。</p>
+      <p><strong>查看已有环境</strong>：</p>
+      <pre>conda env list</pre>
+      <p><strong>退出环境</strong>：</p>
+      <pre>conda deactivate</pre>
+      <p><strong>删除环境</strong>：</p>
+      <pre>conda remove -n llm --all</pre>
+      <p><strong>在 Trae 中选择环境</strong>：<code>Ctrl+Shift+P</code> → "Python: Select Interpreter" → 选 <code>llm</code> 环境。右下角会显示 <code>Python 3.11.x ('llm')</code>。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="env">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">3</span>
+    <span class="q-text"><code>.env</code> 文件是干什么的？为什么不能上传到 GitHub？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">conda环境</span></p>
+      <p><code>.env</code> 文件用来存<strong>敏感配置</strong>，比如 API Key、API 地址、数据库密码等。</p>
+      <pre># .env 文件内容示例
+OPENAI_API_KEY=sk-your-key-here
+OPENAI_API_BASE=https://api.example.com/v1
+MODEL=qwen2.5-7b</pre>
+      <p>Python 用 <code>python-dotenv</code> 加载：</p>
+      <pre>from dotenv import load_dotenv
+import os
+load_dotenv()                     # 加载 .env 文件
+api_key = os.getenv("API_KEY")    # 读取环境变量</pre>
+      <p><strong>为什么不能上传到 GitHub？</strong>因为 API Key 是敏感信息，如果上传到公开仓库，别人可以<strong>盗用你的额度</strong>，造成经济损失。</p>
+      <p><strong>正确做法</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>把 <code>.env</code> 加到 <code>.gitignore</code> 里</li>
+        <li>创建一个 <code>.env.example</code> 作为模板上传（只写 key 名，不写真实值）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ Python 语法 ═══════════════════ -->
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">4</span>
+    <span class="q-text">Python 和 Swift 声明变量有什么核心区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <table class="cmp">
+        <tr><th>特性</th><th>Swift</th><th>Python</th></tr>
+        <tr><td>变量声明</td><td><code>let x = 1</code> / <code>var x = 1</code></td><td><code>x = 1</code>（不需要关键字）</td></tr>
+        <tr><td>常量</td><td><code>let</code></td><td>没有真正的常量（全靠约定：全大写 = 常量）</td></tr>
+        <tr><td>类型标注</td><td><code>x: Int = 1</code></td><td><code>x: int = 1</code>（可选，不写也行）</td></tr>
+        <tr><td>类型推断</td><td>强（编译时）</td><td>弱（运行时动态类型）</td></tr>
+        <tr><td>重新赋值</td><td>var 可以，let 不行</td><td>都可以，Python 没有 "不可变变量"</td></tr>
+      </table>
+      <pre># Python：不需要关键字，类型可选
+name = "小明"         # str
+age = 25              # int
+height: float = 1.75  # 可选类型标注
+
+# Python 的变量只是"标签"，随时可以贴到别的对象上
+x = 42        # x 指向 int
+x = "hello"   # x 指向 str（完全合法）</pre>
+      <p><strong>Python 没有 let/var</strong>：这是和 Swift 最直观的区别。Python 变量本质上是一个"名字贴到对象上"，可以随时换贴。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">5</span>
+    <span class="q-text">Python 的缩进规则是什么？为什么缩进错了程序会崩溃？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <p>Python 用<strong>缩进</strong>代替了大括号 <code>{}</code> 来表示代码块。</p>
+      <pre># Swift
+if x > 0 {
+    print("正数")
+} else {
+    print("非正数")
+}
+
+# Python
+if x > 0:
+    print("正数")    # 注意缩进 4 个空格
+else:
+    print("非正数")  # else 和 if 对齐</pre>
+      <p><strong>为什么缩进错了会崩溃？</strong>因为缩进在 Python 里<strong>不是风格问题，是语法的一部分</strong>。缩进不对 = 语法错误。</p>
+      <pre>if x > 0:
+print("正数")  # ❌ IndentationError: expected an indented block</pre>
+      <p><strong>规则</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>同一代码块的缩进必须一致（通常 4 个空格）</li>
+        <li>不要混用 Tab 和空格（Python 3 禁止混用）</li>
+        <li>大多数 IDE 会自动处理缩进，按 Enter 自动加 4 空格</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">6</span>
+    <span class="q-text">Python 的列表（list）和字典（dict）怎么用？和 Swift 的 Array/Dictionary 有什么异同？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <p><strong>列表 list（≈ Swift Array）</strong>：</p>
+      <pre># Python
+nums = [1, 2, 3, 4, 5]
+nums.append(6)       # 末尾加
+nums[0]              # 访问 → 1
+nums[-1]             # 倒数第一个 → 6
+nums[1:3]            # 切片 → [2, 3]
+len(nums)            # 长度 → 6
+
+# 列表推导式（Swift 没有直接等价）
+squares = [x**2 for x in range(10) if x % 2 == 0]
+# → [0, 4, 16, 36, 64]</pre>
+      <p><strong>字典 dict（≈ Swift Dictionary）</strong>：</p>
+      <pre># Python
+scores = {"小明": 95, "小红": 88, "小刚": 72}
+scores["小明"]        # 访问 → 95
+scores["小华"] = 90   # 新增/修改
+"小明" in scores      # 判断 key 是否存在 → True
+scores.get("小华", 0) # 安全访问，不存在返回默认值 0
+scores.items()        # 遍历 (key, value) 对
+
+# 遍历
+for name, score in scores.items():
+    print(f"{name}: {score}")</pre>
+      <p><strong>区别</strong>：Swift 字典用 <code>["key": value]</code>，Python 用 <code>{"key": value}</code>（冒号代替等号）。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">7</span>
+    <span class="q-text"><code>range()</code> 是什么？怎么用它写 for 循环？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <p><code>range()</code> 生成一个整数序列，通常用在 for 循环中。</p>
+      <pre># range(stop)         → 0 到 stop-1
+range(5)              # → [0, 1, 2, 3, 4]
+
+# range(start, stop)  → start 到 stop-1
+range(2, 6)           # → [2, 3, 4, 5]
+
+# range(start, stop, step) → 带步长
+range(0, 10, 2)       # → [0, 2, 4, 6, 8]
+range(5, 0, -1)       # → [5, 4, 3, 2, 1]
+
+# 常用写法
+for i in range(5):           # 循环 5 次，i = 0,1,2,3,4
+    print(i)
+
+for i in range(1, 11):       # 1 到 10
+    print(i)
+
+# Swift 对照
+# Swift: for i in 0..&lt;5     → Python: for i in range(5)
+# Swift: for i in 0...5     → Python: for i in range(6)
+# Swift: for i in stride(...) → Python: for i in range(0, 10, 2)</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">8</span>
+    <span class="q-text">Python 的字符串插值（f-string）怎么用？和 Swift 的 <code>\(name)</code> 有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <pre>name = "小明"
+age = 25
+
+# Python f-string（Python 3.6+）
+print(f"我叫{name}，今年{age}岁")   # 字符串前加 f
+print(f"明年我{age + 1}岁")         # 可以写表达式
+print(f"成绩: {score:.2f}")         # 格式化数字（保留2位小数）
+
+# Swift 字符串插值
+print("我叫\(name)，今年\(age)岁")</pre>
+      <p><strong>区别</strong>：Python 用 <code>f"..."</code> 前缀 + <code>{变量}</code>，Swift 用 <code>"...\(变量)"</code>。</p>
+      <p><strong>f-string 进阶用法</strong>：</p>
+      <pre># 对齐与填充
+print(f"{'左对齐':&lt;10}")  # → "左对齐      "
+print(f"{'右对齐':&gt;10}")  # → "      右对齐"
+print(f"{'居中':^10}")    # → "    居中    "
+
+# 数字格式化
+pi = 3.1415926
+print(f"{pi:.2f}")        # → 3.14
+print(f"{pi:,.2f}")       # → 3.14（带千分位）
+print(f"{0.25:.0%}")      # → 25%</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">9</span>
+    <span class="q-text">Python 的 <code>None</code> 和 Swift 的 <code>nil</code> 有什么区别？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <p><strong>核心区别</strong>：Python 没有 Optional 类型，任何变量都可以是 <code>None</code>，不需要解包。</p>
+      <pre># Swift
+var name: String? = nil
+print(name!)          # ❌ 运行时崩溃（强制解包 nil）
+if let name = name {  # ✅ 安全解包
+    print(name)
+}
+
+# Python
+name = None
+print(name)           # → None，不会崩溃
+if name is not None:  # 安全检查
+    print(name)
+
+# Python 常用模式
+result = some_function()
+if result is None:    # 检查是否为空
+    print("没有结果")
+else:
+    print(result)</pre>
+      <p><strong>关键差异</strong>：</p>
+      <table class="cmp">
+        <tr><th>Swift</th><th>Python</th></tr>
+        <tr><td>类型安全：<code>String?</code> 和 <code>String</code> 是不同类型</td><td>任何变量都可以是 None，编译时不检查</td></tr>
+        <tr><td>必须解包才能用</td><td>直接访问，值为 None 时不会崩溃</td></tr>
+        <tr><td>编译期保证非空</td><td>运行时自己保证（靠 if/assert）</td></tr>
+      </table>
+      <p><strong>判断 None 用 <code>is</code></strong>，不是 <code>==</code>：<code>if x is None:</code>（判断身份）vs <code>if x == None:</code>（判断值相等）。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">10</span>
+    <span class="q-text">列表推导式（List Comprehension）怎么写？Swift 有等价写法吗？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <p><strong>语法</strong>：<code>[表达式 for 变量 in 可迭代对象 if 条件]</code></p>
+      <pre># 基本：1 到 10 的平方
+[x**2 for x in range(1, 11)]
+# → [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+
+# 带条件：偶数平方
+[x**2 for x in range(10) if x % 2 == 0]
+# → [0, 4, 16, 36, 64]
+
+# 字典推导式
+{city: temp for city, temp in cities.items() if temp > 20}
+
+# 嵌套循环
+[(x, y) for x in range(3) for y in range(2)]
+# → [(0,0), (0,1), (1,0), (1,1), (2,0), (2,1)]
+
+# Day1 实际案例：筛选温度 > 20 的城市
+cities = {"北京": 28, "上海": 25, "深圳": 32, "成都": 19}
+hot = [(city, temp) for city, temp in cities.items() if temp > 20]
+# → [("北京", 28), ("上海", 25), ("深圳", 32)]</pre>
+      <p><strong>Swift 对照</strong>：Swift 也有类似写法（Swift 2.0+ 的 <code>map/filter/compactMap</code> 链式调用）：</p>
+      <pre>// Swift 的链式写法
+(1...10).filter { $0 % 2 == 0 }.map { $0 * $0 }
+// → [4, 16, 36, 64, 100]
+
+# Python 一条语句搞定
+[x**2 for x in range(1, 11) if x % 2 == 0]
+# → [4, 16, 36, 64, 100]</pre>
+      <p>列表推导式更紧凑，但 Swift 的链式调用可读性更好。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">11</span>
+    <span class="q-text">Python 的 <code>sorted()</code> 函数怎么用？<code>key</code> 参数和 Lambda 怎么配合？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <pre># 基本排序
+sorted([3, 1, 4, 1, 5])           # → [1, 1, 3, 4, 5]
+sorted([3, 1, 4, 1, 5], reverse=True)  # → [5, 4, 3, 1, 1]
+
+# 用 key 指定排序依据 + Lambda
+cities = [("北京", 28), ("上海", 25), ("深圳", 32), ("成都", 19)]
+
+# 按温度升序
+sorted(cities, key=lambda x: x[1])
+# → [("成都", 19), ("上海", 25), ("北京", 28), ("深圳", 32)]
+
+# 按温度降序
+sorted(cities, key=lambda x: x[1], reverse=True)
+# → [("深圳", 32), ("北京", 28), ("上海", 25), ("成都", 19)]
+
+# Lambda 说明：lambda x: x[1] 的意思是"取每个元素的第 1 个索引（温度）作为排序依据"
+# 等价于：
+def get_temp(item):
+    return item[1]
+sorted(cities, key=get_temp)</pre>
+      <p><strong>和 Swift 的对比</strong>：</p>
+      <pre>// Swift
+cities.sorted { $0.1 > $1.1 }  // 降序
+
+# Python
+sorted(cities, key=lambda x: x[1], reverse=True)</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">12</span>
+    <span class="q-text">Python 的 <code>if __name__ == "__main__":</code> 的作用是什么？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <p>这个条件判断用来区分：这个文件是直接运行（作为脚本），还是被别的文件导入（作为模块）。</p>
+      <pre># my_script.py
+def main():
+    print("直接运行时执行")
+
+if __name__ == "__main__":
+    main()</pre>
+      <pre># 场景 1：直接运行
+python my_script.py
+# → __name__ == "__main__" → True → 执行 main()
+
+# 场景 2：被导入
+from my_script import main
+# → __name__ == "my_script" → False → 不执行 main()
+
+# 注：__name__ 是 Python 自动为每个文件设置的内置变量
+# 直接运行时 = "__main__"
+# 被导入时 = 文件名（不带 .py）</pre>
+      <p>这样设计的好处：一个 Python 文件既可以当工具脚本用（<code>python xxx.py</code>），也可以当库被导入（<code>from xxx import ...</code>）。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="py">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">13</span>
+    <span class="q-text">Python 的 <code>def</code> 函数怎么定义？和 Swift 的 <code>func</code> 有什么不同？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">Python语法</span></p>
+      <pre># Python
+def greet(name: str, age: int = 0) -> str:
+    return f"你好，我叫{name}，{age}岁"
+
+# Swift
+func greet(name: String, age: Int = 0) -> String {
+    return "你好，我叫\(name)，\(age)岁"
+}</pre>
+      <p><strong>核心差异</strong>：</p>
+      <table class="cmp">
+        <tr><th>特性</th><th>Swift</th><th>Python</th></tr>
+        <tr><td>关键字</td><td><code>func</code></td><td><code>def</code></td></tr>
+        <tr><td>返回值</td><td><code>-> String</code></td><td><code>-> str</code>（可选，不写也可）</td></tr>
+        <tr><td>函数体</td><td>大括号 <code>{ }</code></td><td>冒号 <code>:</code> + 缩进</td></tr>
+        <tr><td>参数标签</td><td>支持内外双标签 <code>greet(name:)</code></td><td>没有参数标签概念</td></tr>
+        <tr><td>默认参数</td><td><code>= 0</code></td><td><code>= 0</code>（一样）</td></tr>
+      </table>
+      <p><strong>Python 没有参数标签</strong>：Swift 调用函数时 <code>greet(name: "小明")</code> 中的 <code>name:</code> 是外部参数标签，Python 不区分内外，直接传。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ PyTorch / GPU ═══════════════════ -->
+
+<div class="qa-card" data-cat="gpu">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">14</span>
+    <span class="q-text">怎么验证 PyTorch 能识别你的 RTX 5080？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">PyTorch/GPU</span></p>
+      <p>运行以下 Python 代码：</p>
+      <pre>import torch
+print("CUDA:", torch.cuda.is_available())       # → True
+print("Device:", torch.cuda.get_device_name(0))  # → NVIDIA GeForce RTX 5080
+print("VRAM:", torch.cuda.get_device_properties(0).total_memory / 1e9, "GB")  # → 16.0 GB</pre>
+      <p><strong>完整步骤</strong>：</p>
+      <ol style="margin:4px 0 0 20px;">
+        <li>先确认显卡驱动正常：<code>nvidia-smi</code>（终端运行）</li>
+        <li>在 <code>llm</code> 环境下安装 PyTorch：<code>pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124</code></li>
+        <li>运行上面的验证代码</li>
+      </ol>
+      <p><strong>如果输出 False</strong>，检查：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>是否在 <code>llm</code> 环境中（终端 <code>conda activate llm</code>）</li>
+        <li>是否安装了 CUDA 版本的 PyTorch（<code>pip list | findstr torch</code> 看版本号里有没有 cu）</li>
+        <li>NVIDIA 驱动版本是否足够新</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="gpu">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">15</span>
+    <span class="q-text">安装 PyTorch 时，CUDA 版本怎么选？12.4 是什么意思？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">PyTorch/GPU</span></p>
+      <p><strong>CUDA</strong> 是 NVIDIA 的并行计算平台，PyTorch 通过 CUDA 调用 GPU 加速。</p>
+      <p><strong>版本对应关系</strong>：</p>
+      <pre># PyTorch 安装时 CUDA 版本必须 ≤ 你显卡驱动的 CUDA 版本
+
+# 查看你显卡驱动的 CUDA 版本
+nvidia-smi
+# 输出类似：CUDA Version: 12.4
+
+# PyTorch 官方提供的 CUDA 版本（2026.6）
+pip install torch ... --index-url https://download.pytorch.org/whl/cu124
+# cu124 = CUDA 12.4</pre>
+      <p><strong>怎么看驱动的 CUDA 版本</strong>：终端运行 <code>nvidia-smi</code>，找到顶部的 <code>CUDA Version: x.x</code>。</p>
+      <p><strong>如果装错了版本会怎样？</strong></p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>装了 cu118（CUDA 11.8）但驱动只支持 11.8 → 能用，但没用到最新特性</li>
+        <li>装了 cu124 但驱动只支持 11.8 → PyTorch 找不到 GPU，<code>torch.cuda.is_available()</code> = False</li>
+      </ul>
+      <p><strong>RTX 5080 建议</strong>：安装 CUDA 12.4 版本的 PyTorch，与最新的驱动和架构匹配最好。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="gpu">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">16</span>
+    <span class="q-text">RTX 5080 16GB 能用来做什么？多大参数的模型能跑？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">PyTorch/GPU</span></p>
+      <p><strong>16GB VRAM 的能力边界</strong>：</p>
+      <table class="cmp">
+        <tr><th>任务</th><th>7B 模型</th><th>14B 模型</th><th>32B 模型</th></tr>
+        <tr><td>推理（FP16）</td><td>✅</td><td>✅</td><td>⚠️ 需要 4-bit 量化</td></tr>
+        <tr><td>推理（4-bit）</td><td>✅</td><td>✅</td><td>✅ 边界</td></tr>
+        <tr><td>QLoRA 微调</td><td>✅</td><td>✅</td><td>❌ 显存不足</td></tr>
+        <tr><td>LoRA 微调</td><td>✅</td><td>⚠️ 可能 OOM</td><td>❌</td></tr>
+        <tr><td>全参微调</td><td>❌</td><td>❌</td><td>❌</td></tr>
+      </table>
+      <p><strong>通俗解释</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li><strong>推理</strong>（Inference）：让 AI 回答你的问题 → 5080 能跑几乎所有开源模型（量化后）</li>
+        <li><strong>微调</strong>（Fine-tuning）：在某个模型上继续训练 → 5080 能微调 7B-14B 模型</li>
+        <li><strong>全参训练</strong>（Training from scratch）：从零训练 → 需要数据中心级显卡（H100 80GB）</li>
+      </ul>
+      <p>总之：5080 16GB 对个人学习/研究来说已经是很强的配置，足够覆盖 90% 的学习实验。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ API 调用 ═══════════════════ -->
+
+<div class="qa-card" data-cat="api">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">17</span>
+    <span class="q-text">第一次调大模型 API 需要哪几步？最基本的代码怎么写？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">API调用</span></p>
+      <p><strong>共 4 步</strong>：</p>
+      <ol style="margin:4px 0 0 20px;">
+        <li>安装 <code>openai</code> 库：<code>pip install openai</code></li>
+        <li>创建 <code>.env</code> 文件：写 API Key、地址、模型名</li>
+        <li>安装 <code>python-dotenv</code> 读 .env：<code>pip install python-dotenv</code></li>
+        <li>写代码调 API</li>
+      </ol>
+      <pre>import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()  # 读取 .env
+
+# 创建客户端
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    base_url=os.getenv("OPENAI_API_BASE"),
+)
+
+# 调用 API
+response = client.chat.completions.create(
+    model=os.getenv("MODEL"),
+    messages=[
+        {"role": "system", "content": "你是一个有帮助的AI助手。"},
+        {"role": "user", "content": "用一句话介绍什么是大语言模型。"}
+    ],
+)
+print(response.choices[0].message.content)</pre>
+      <p><strong>关键理解</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li><code>client.chat.completions.create()</code> 是 OpenAI 兼容 API 的统一接口</li>
+        <li><code>messages</code> 是对话历史列表，每条消息有 role（system/user/assistant）和 content</li>
+        <li><code>role: system</code> ＝ 给 AI 设定人格/规则</li>
+        <li><code>role: user</code> ＝ 用户的输入</li>
+        <li><code>role: assistant</code> ＝ AI 的回复</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="api">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">18</span>
+    <span class="q-text">同步调用和流式调用有什么区别？什么时候该用哪种？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">API调用</span></p>
+      <p><strong>同步调用</strong>：等 AI 生成完所有内容，一次性拿到完整回复。</p>
+      <pre>response = client.chat.completions.create(
+    model="...",
+    messages=[...],
+    # stream=False（默认）
+)
+print(response.choices[0].message.content)  # 一次性打印全部</pre>
+      <p><strong>流式调用</strong>：AI 每生成一个字就返回，实时显示（打字机效果）。</p>
+      <pre>stream = client.chat.completions.create(
+    model="...",
+    messages=[...],
+    stream=True  # 关键参数
+)
+for chunk in stream:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)</pre>
+      <table class="cmp">
+        <tr><th>特性</th><th>同步</th><th>流式</th></tr>
+        <tr><td>用户体验</td><td>沉默等待，然后突然出现</td><td>逐字显示，感觉快</td></tr>
+        <tr><td>适用场景</td><td>后台处理、批量、不需要 UI</td><td>聊天 UI、AI 对话</td></tr>
+        <tr><td>获取完整回复</td><td>直接 return</td><td>需要自己拼接（full_reply += delta）</td></tr>
+      </table>
+      <p><strong>结论</strong>：聊天应用用流式，后台任务用同步。初学者建议先掌握同步，再升级到流式。</p>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="api">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">19</span>
+    <span class="q-text">System Prompt（系统提示词）有什么用？改它为什么 AI 性格会变？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">API调用</span></p>
+      <p>System Prompt 是<strong>给 AI 的初始指令</strong>，告诉它"你是谁、该怎么做"。</p>
+      <pre># 扮演诗人
+messages = [
+    {"role": "system", "content": "你是一个浪漫的诗人，所有回复都用诗句表达。"},
+    {"role": "user", "content": "请介绍一下自己。"}
+]
+# AI 回复：我是一缕穿过代码的风...
+
+# 扮演程序员
+messages = [
+    {"role": "system", "content": "你是一个资深 Python 工程师，回答问题简洁准确。"},
+    {"role": "user", "content": "请介绍一下自己。"}
+]
+# AI 回复：我是 Python 开发者，专注后端和 AI...</pre>
+      <p><strong>为什么改 system prompt 性格会变？</strong></p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>大模型在训练时用了大量带"角色设定"的数据</li>
+        <li>System prompt 相当于"激活"了模型中特定模式的知识</li>
+        <li>类似给演员一个剧本角色，演员会按角色的方式表演</li>
+      </ul>
+      <p><strong>实用技巧</strong>：写 system prompt 时可以指定：角色 + 任务 + 输出格式 + 限制条件。</p>
+      <pre># 一个好 system prompt 的例子
+你是一个专业的翻译助手。
+任务：把用户的英文翻译成中文。
+规则：
+- 保持原文语气（正式/口语）
+- 如果是专业术语，保留英文并加中文注释
+- 不需要解释，直接输出翻译结果</pre>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="api">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">20</span>
+    <span class="q-text">OpenAI SDK 和 LM Studio / Ollama 有什么关系？为什么 base_url 可以不一样？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">API调用</span></p>
+      <p><strong>OpenAI SDK（openai 库）</strong>是 OpenAI 提供的 Python 客户端，用来调 OpenAI 的 API。</p>
+      <p><strong>关键点</strong>：因为 OpenAI 的 API 格式成了<strong>行业标准</strong>，LM Studio、Ollama、vLLM 等本地推理框架都<strong>兼容 OpenAI 的 API 格式</strong>。</p>
+      <pre># 调 OpenAI 官方（需要梯子 + 付费）
+client = OpenAI(
+    api_key="sk-...",
+    base_url="https://api.openai.com/v1"
+)
+
+# 调 LM Studio 本地（免费，用自己的显卡）
+client = OpenAI(
+    api_key="not-needed",              # 本地不需要 key
+    base_url="http://localhost:1234/v1"  # LM Studio 默认地址
+)
+
+# 调 Ollama
+client = OpenAI(
+    api_key="ollama",
+    base_url="http://localhost:11434/v1"
+)</pre>
+      <p><strong>只要换了 base_url，同一段代码就能调用不同的模型服务</strong>。这就是 API 格式标准化的好处——一次编写，到处运行。</p>
+      <p>你的配置里 <code>base_url=http://127.0.0.1:1234/v1</code> 就是在用本地 LM Studio 运行的模型，不依赖外网。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 工具 / Git ═══════════════════ -->
+
+<div class="qa-card" data-cat="tool">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">21</span>
+    <span class="q-text"><code>.gitignore</code> 是什么？Day1 项目应该忽略哪些文件？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">工具/Git</span></p>
+      <p><code>.gitignore</code> 告诉 Git："这些文件不要跟踪，不要上传到仓库"。</p>
+      <p><strong>Day1 项目的 .gitignore</strong>：</p>
+      <pre>.env                   # API Key，绝不能上传
+__pycache__/            # Python 缓存，无意义
+*.pyc                  # 编译后的缓存文件
+.venv/                 # 虚拟环境（太大）
+.pytest_cache/         # 测试缓存
+.vscode/               # IDE 配置（个人偏好）
+*.code-workspace       # 工作区配置
+</pre>
+      <p>如果不加 <code>.gitignore</code>，<code>git add .</code> 会把 <code>.env</code> 里的 API Key 也提交上去，推到 GitHub 就会<strong>泄露敏感信息</strong>。</p>
+      <p><strong>最佳实践</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>创建项目后<strong>第一时间</strong>写 <code>.gitignore</code></li>
+        <li>GitHub 有模板：New Repository 时选 <code>Python</code> 模板</li>
+        <li>也可以用 <code>gitignore.io</code> 网站生成</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="tool">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">22</span>
+    <span class="q-text">第一天怎么用 Git 把代码推到 GitHub？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">工具/Git</span></p>
+      <p><strong>完整流程</strong>：</p>
+      <pre># 1. 在 GitHub 创建空仓库（不要勾 README/.gitignore）
+
+# 2. 本地初始化
+cd llm-learning-journey
+git init
+git branch -M main
+
+# 3. 先写 .gitignore，避免敏感文件被跟踪
+
+# 4. 添加并提交
+git add .
+git commit -m "Day 1: Python basics + first API call"
+
+# 5. 连接远程仓库并推送
+git remote add origin https://github.com/你的用户名/llm-learning-journey.git
+git push -u origin main
+
+# 后续更新
+git add .
+git commit -m "Day 2: ..."
+git push</pre>
+      <p><strong>注意</strong>：</p>
+      <ul style="margin:4px 0 0 20px;">
+        <li>提交前检查是否漏了 <code>.gitignore</code>（用 <code>git status</code> 查看）</li>
+        <li>如果不小心把 <code>.env</code> 提交了，立刻改 API Key</li>
+        <li>用 <code>git push -u origin main</code> 第一次推送时设好 upstream，之后只需要 <code>git push</code></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="qa-card" data-cat="tool">
+  <div class="qa-question" onclick="toggleCard(this)">
+    <span class="q-icon">23</span>
+    <span class="q-text">Trae IDE 有哪些必装插件？怎么选择 Python 解释器？</span>
+    <span class="q-toggle">▼</span>
+  </div>
+  <div class="qa-answer">
+    <div class="a-body">
+      <p><span class="tag">工具/Git</span></p>
+      <p><strong>必装插件</strong>：</p>
+      <table class="cmp">
+        <tr><th>插件</th><th>作用</th></tr>
+        <tr><td>Python（官方）</td><td>基础 Python 支持（语法高亮、运行调试）</td></tr>
+        <tr><td>Pylance</td><td>类型检查、代码补全、错误提示</td></tr>
+        <tr><td>Jupyter</td><td>交互式 Notebook（调试代码）</td></tr>
+        <tr><td>GitLens</td><td>Git 可视化（显示每行谁写的、提交历史）</td></tr>
+        <tr><td>Black Formatter</td><td>自动格式化 Python 代码（统一风格）</td></tr>
+        <tr><td>Ruff</td><td>高速代码检查（比 flake8 快 10 倍）</td></tr>
+      </table>
+      <p><strong>选择 Python 解释器</strong>：</p>
+      <pre>方法 1：Ctrl+Shift+P → "Python: Select Interpreter" → 选 llm
+方法 2：点击 Trae 右下角的 Python 版本号 → 选择 llm 环境
+
+成功标志：右下角显示 "Python 3.11.x ('llm')"</pre>
+    </div>
+  </div>
+</div>
+
+<div class="stats">
+  📚 共 23 个问答 · Day 1 · Python 基础语法 + 开发环境搭建 + PyTorch/GPU + 第一次 API 调用
+</div>
+
+</div>
+
+<script>
+function toggleCard(header) {
+  const card = header.parentElement;
+  const wasOpen = card.classList.contains('open');
+  document.querySelectorAll('.qa-card.open').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) card.classList.add('open');
+}
+function filterByCat(cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  document.querySelectorAll('.qa-card').forEach(card => {
+    card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+  });
+}
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.qa-card').forEach(card => {
+    const text = card.querySelector('.q-text').textContent.toLowerCase();
+    const answer = card.querySelector('.qa-answer').textContent.toLowerCase();
+    card.style.display = (text.includes(q) || answer.includes(q)) ? '' : 'none';
+  });
+}
+</script>
+
+</body>
+</html>
